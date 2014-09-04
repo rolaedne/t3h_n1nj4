@@ -2,8 +2,6 @@ package t3h.n1nj4;
 
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
 
 public class Entity {
 
@@ -13,6 +11,7 @@ public class Entity {
     public Entity(String resource) {
         image = Utils.loadImage(resource);
 
+        /*
         BufferedImage bi = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
 
         Graphics2D big = bi.createGraphics();
@@ -25,7 +24,7 @@ public class Entity {
 
         System.out.println("MirrorTransform: " + mirrorTransform.toString());
         image = bi;
-
+		*/
 
     }
 
@@ -33,3 +32,4 @@ public class Entity {
         g.drawImage(image, x, y, null);
     }
 }
+
