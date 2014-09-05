@@ -10,7 +10,7 @@ public class GameController {
 
     private Entity entity = new Entity("resources/images/sprite.png");
     private int x = 0; // TODO: Don't do stupid shit like this
-
+    private int y = 0; 
 
     // Advance the game world by the given duration
     public void step(final long duration) {
@@ -30,7 +30,7 @@ public class GameController {
         // Player
         // Foremost animated objects
         // UI elements
-        entity.draw(g, viewPort.x + viewPort.width/2 + x, viewPort.y + viewPort.height/2);
+        entity.draw(g, viewPort.x + viewPort.width/2 + x, viewPort.y + viewPort.height/2 - y);
     }
 
     public KeyListener getKeyListener() {
@@ -45,6 +45,9 @@ public class GameController {
 				if (e.getKeyCode() == KeyEvent.VK_LEFT) {
 					x += -5;
 				}
+				if (e.getKeyCode() == KeyEvent.VK_UP) {
+					y += 5; 
+				}// SUCK ALL THE COCKS
 			}
 		};
     }
