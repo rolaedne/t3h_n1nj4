@@ -191,6 +191,8 @@ void dead() {
                     case SDLK_SPACE:
                         done = TRUE;
                         break;
+                    default:
+                        break;
                 }
                 break;
             default:

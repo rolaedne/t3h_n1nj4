@@ -1,7 +1,7 @@
 CPPFLAGS=$(shell sdl-config --cflags)
 LIBS=$(shell sdl-config --libs) -lSDL_image
 CPP=gcc
-OBJS=main.o world.o plyr.o nmy.o
+OBJS=main.o world.o plyr.o nmy.o particles.o
 NAME=teh_ninja
 
 

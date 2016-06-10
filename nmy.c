@@ -12,6 +12,7 @@
 #include "world.h"
 #include "nmy.h"
 #include "plyr.h"
+#include "particles.h"
 
 void killplayer(int i) {
     /**************************************
@@ -191,6 +192,11 @@ void enemyai() {
             } else if (ninja_src.x >= 180) {
                 nmy[i].nmydest.x += 5; /*temp val*/
             }
+            int x, y;
+            x = nmy[i].nmydest.x + nmy[i].nmydest.w / 2;
+            y = nmy[i].nmydest.y + nmy[i].nmydest.h / 2;
+            x += wrldps.x;
+            addParticle(blood1, x, y, 0, 0, 1.0);
         }
         for (t = 0; t < 10; t++) {/*rests their dir arrray*/
             nmy[i].dir[t] = 0;

@@ -14,15 +14,28 @@
 #include "world.h"
 #include "nmy.h"
 #include "plyr.h"
+#include "particles.h"
 
+int isCollision(int x, int y) {
+    int row, col;
+    row = y / BRICK_HEIGHT;
+    col = x / BRICK_WIDTH;
+    //printf("BRICK: %dx%d\n", row, col);
+    if (row > WORLD_ROWS || row < 0) { return 1; }
+    if (col > WORLD_COLS || col < 0) { return 1; }
+    return world[row][col] > 0;
+}
 
 void graphics_load() {
     printf("DEBUG: graphics_load()");
     /*TODO: load checks on these*/
     /*init images*/
+    foreground = IMG_Load("lvl/foreground0.png");
     wscore = IMG_Load("lvl/score.png");
     number = IMG_Load("lvl/number.png");
     blood1 = IMG_Load("bloods/blood4.png");
+    snow = IMG_Load("bloods/snow.png");
+    ash = IMG_Load("bloods/ash.png");
     sweapon1_1 = IMG_Load("weapons/star1.png");
     sweapon1_2 = IMG_Load("weapons/star2.png");
 
@@ -44,6 +57,10 @@ void graphics_free() {
     int i;
 
     printf("DEBUG: graphics_free()\n");
+    if(foreground != NULL) {
+        SDL_FreeSurface(foreground);
+        foreground = NULL;
+    }
     if(wscore != NULL) {
         SDL_FreeSurface(wscore);
         wscore = NULL;
@@ -184,6 +201,13 @@ void buildw() {
         exit(EXIT_FAILURE);
     }
 
+    sprintf(lvlname, "lvl/foreground%d.png", worldnum);
+
+    foreground = IMG_Load(lvlname);
+    if(foreground == NULL) {
+        fprintf(stderr, "Error loading foreground image: %s\n", IMG_GetError());
+    }
+ 
     fscanf(world_file, "%d", &x);
     enemymax = x; /*set max amount of enemies*/
     for (i = 0; i < NMY && i < enemymax; i++) {/*set enemy destinations from file*/
@@ -273,8 +297,8 @@ void buildw() {
 
             nmy[i].nmyani = 0; /*what animation frame to start on*/
             nmy[i].nmyanilen = 4; /*home many animations that is zero based*/
-            nmy[i].jmp = -45;
-            nmy[i].speed = 6;
+            nmy[i].jmp = -55;
+            nmy[i].speed = 8;
             nmy[i].jmpon = 0;
 
         }
@@ -367,7 +391,7 @@ void world_mover() {
     if ((dest.x + wrldps.x + (SCREENWIDTH / 2))>(BRICK_WIDTH * world_length)) {/*can't scroll anymore to the right*/
         if ((dest.x + wrldps.x + 25)>(BRICK_WIDTH * world_length)) {/*reached the end of the screen*/
             worldnum++;
-            buildw(worldnum);
+            buildw(); // Doesn't take worldnum as a parameter
         }
     } else if (dest.x > SCREENWIDTH / 2) {/*moves screen if past half screen lenght*/
         dest.x = SCREENWIDTH / 2;
@@ -406,16 +430,34 @@ int twoblock_col(int bb1x, int bb1y, int bb1w, int bb1h,
     return 0;
 }
 
+int bRand(int min, int max) {
+    int random = rand() % max;
+    if (random < min) {
+        random += min;
+    }
+    return random;
+}
+
 void blood(SDL_Rect bleed) {
     /***********************************************************
      *causes blood to be placed on the screen
      *takes in teh sdl_rect to know where to place the blood
      *it takes into account the the lenght of the world
      *************************************************************/
-
-    printf("DEBUG: blood(%d, %d)\n", bleed.x, bleed.y);
-    bleed.x += wrldps.x;
-    SDL_BlitSurface(blood1, NULL, background, &bleed);
+    int x, y;
+    x = bleed.x + bleed.w / 2;
+    y = bleed.y + bleed.h / 2;
+    printf("DEBUG: blood(%d, %d)\n", x, y);
+    x += wrldps.x;
+    
+    addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0);
+    addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(6, 20), 1.0);
+    addParticle(blood1, x, y, bRand(1, 4) *-1, -1 * bRand(2, 8), 1.0);
+    addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0);
+    addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(4, 12), 1.0);
+    
+    
+    //SDL_BlitSurface(blood1, NULL, background, &bleed);
 }
 
 void rprint(int val) {

@@ -28,7 +28,7 @@ extern "C" {
 SDL_Surface *dmgbrick[BRICKS_DAMAGE];
 int world_length;
 int worldnum;
-SDL_Surface *screen, *background, *worldfloor, *worldbrick[BRICKS_WORLD];
+SDL_Surface *screen, *background, *foreground, *worldfloor, *worldbrick[BRICKS_WORLD];
 SDL_Surface *number, *wscore;
 SDL_Rect worlddest;
 SDL_Event event;
@@ -45,7 +45,7 @@ void buildw();
 void world_mover();
 int twoblock_col(int bb1x, int bb1y, int bb1w, int bb1h,
                   int bb2x, int bb2y, int bb2w, int bb2h);
-
+int isCollision(int x, int y);
 
 
 #ifdef	__cplusplus

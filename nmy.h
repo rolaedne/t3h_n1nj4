@@ -64,7 +64,7 @@ void killplayer(int i);
 void nmy_physics(int i);
 void nmy_spwn(int i);
 void enemyanimation(int i);
-void enmyai();
+void enemyai();
 
 
 

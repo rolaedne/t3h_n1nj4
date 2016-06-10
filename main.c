@@ -13,12 +13,14 @@
 #include "world.h"
 #include "nmy.h"
 #include "plyr.h"
+#include "particles.h"
 
 #define DTIME 5
-#define MSECS_PER_FRAME 30
+#define MSECS_PER_FRAME 1000/30
 
 void startScreen();
 void playIntroMovie();
+void letItSnow();
 
 int main(int argc, char **argv) {
     /*********************************************************
@@ -146,48 +148,15 @@ int main(int argc, char **argv) {
             if (jump != 0) {
                 if (ninja_src.x >= 180) {
                     ninja_src.x += 60;
-                    /*DEBUGING
-                    Uint32 color;
-                    SDL_Rect ndest;
-                    color = SDL_MapRGB(screen->format, 0, 0, 0);
-                    ndest.x=dest.x+45;
-                    ndest.y=dest.y+25;
-                    ndest.w=20;
-                    ndest.h=30;
-                    SDL_FillRect(screen, &ndest, color);
-                    SDL_Flip(screen);
-                    SDL_Delay(10);*/
                 } else {
                     ninja_src.x -= 60;
-                    /*DEBUGING
-                    Uint32 color;
-                    SDL_Rect ndest;
-                    color = SDL_MapRGB(screen->format, 0, 0, 0);
-                    ndest.x=dest.x;
-                    ndest.y=dest.y+25;
-                    ndest.w=20;
-                    ndest.h=30;
-                    SDL_FillRect(screen, &ndest, color);
-                    SDL_Flip(screen);
-                    SDL_Delay(10);*/
                 }
             } else {
                 ninja_src.y = 160;
-                /*DEBUGING
-                Uint32 color;
-                SDL_Rect ndest;
-                color = SDL_MapRGB(screen->format, 0, 0, 0);
-                ndest.x=dest.x+45;
-                ndest.y=dest.y+25;
-                ndest.w=20;
-                ndest.h=30;
-                SDL_FillRect(screen, &ndest, color);
-                SDL_Flip(screen);
-                SDL_Delay(10);*/
             }
             attack -= 1;
             killenemy();
-        }//end of attacking
+        } //end of attacking
 
         ticks = SDL_GetTicks();
 
@@ -196,6 +165,14 @@ int main(int argc, char **argv) {
         special_throw();
         enemyai();
         rprint(score);
+        if (worldnum == 0) {
+            letItSnow(snow, -2 + worldnum);
+            letItSnow(ash, -2 + worldnum);
+        } else {
+            letItSnow(snow, -3 + worldnum);
+        }
+        drawParticles(screen);
+        SDL_BlitSurface(foreground, &wrldps, screen, NULL);
         SDL_Flip(screen);
 
         delay = SDL_GetTicks() - ticks;
@@ -205,13 +182,28 @@ int main(int argc, char **argv) {
             delay = MSECS_PER_FRAME - delay;
         }
         SDL_Delay(delay);
-        printf("DEBUG: delay %d\n",delay);
         world_mover();
     }
 
     graphics_free();
 
     return 8008135;
+}
+
+
+void letItSnow(SDL_Surface *precipitation, int snowFrequency) {
+    static int snowLimiter = 0;
+    if (snowFrequency < 0) {
+        if (snowLimiter++ < 0) { return; }
+        snowLimiter = snowFrequency;
+    }
+    int i = 0;
+    do {
+        int x = rand() % (640 * 2) + wrldps.x;
+        int y = 0;
+        float weight = 0.2 + (rand() % 10 * 0.01);
+        addParticle(precipitation, x, y, (rand() % 4 + 1) * -1, rand() % 4 + 1, weight);
+    } while (++i < snowFrequency);
 }
 
 void startScreen() {
@@ -234,7 +226,7 @@ void startScreen() {
 
     /* wait 6000 milliseconds for the user to press spacebar; if they
      * don't, run the intro movie. */
-    while(TRUE) {
+    while (TRUE) {
         msecs_waited = 0;
         while(msecs_waited < max_wait_length) {
             msecs_waited += 10;
@@ -247,7 +239,7 @@ void startScreen() {
                         break; /* unreachable, but here for clarity */
                     case SDL_KEYUP:
                     /* case SDL_KEYDOWN: */
-                        if (event.key.keysym.sym = SDLK_SPACE) {
+                        if (event.key.keysym.sym == SDLK_SPACE) {
                             SDL_FreeSurface(start_screen_surface);
                             return;
                         }

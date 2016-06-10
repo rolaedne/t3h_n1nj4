@@ -31,6 +31,7 @@ typedef enum {
 SDL_Rect dest, spdest;
 SDL_Surface *ninja;
 SDL_Surface *blood1;
+SDL_Surface *snow, *ash;
 SDL_Surface *sweapon1_1, *sweapon1_2;
 SDL_Rect ninja_src;
 int gravity_compound;
