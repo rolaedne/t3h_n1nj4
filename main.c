@@ -23,7 +23,7 @@ void startScreen();
 void playIntroMovie();
 void letItSnow();
 void updateScreen();
-int delayMs(const int);
+int delayMs(const unsigned int);
 
 int main(int argc, char **argv) {
     /*********************************************************
@@ -212,7 +212,7 @@ void letItSnow(SDL_Surface *precipitation, int snowFrequency) {
 void startScreen() {
     SDL_Surface *start_screen_surface;
     unsigned int msecs_waited;
-    const unsigned int max_wait_length = 2000;
+    const unsigned int max_wait_length = 3000;
 
     printf("DEBUG: startScreen\n");
 
@@ -248,6 +248,7 @@ void playIntroMovie() {
      ******************************/
     Uint8 color;
     int i;
+    int textDelayMs = 60 * 15;
     SDL_Rect ndest, bardest;
     SDL_Surface *backdrop, *bl, *grass, *black, *lightn, *ninjaborn,
             *rl, *red, *txt1, *txt2, *txt3, *txt4, *txt5, *txt6;
@@ -345,42 +346,42 @@ void playIntroMovie() {
     SDL_BlitSurface(txt1, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt1);
-    if (delayMs(60 * 10)) return;
+    if (delayMs(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
     txt2 = loadImageAsSurface("intro_mov/txt2.png");
     SDL_BlitSurface(txt2, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt2);
-    if (delayMs(60 * 10)) return;
+    if (delayMs(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
     txt3 = loadImageAsSurface("intro_mov/txt3.png");
     SDL_BlitSurface(txt3, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt3);
-    if (delayMs(60 * 10)) return;
+    if (delayMs(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
     txt4 = loadImageAsSurface("intro_mov/txt4.png");
     SDL_BlitSurface(txt4, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt4);
-    if (delayMs(60 * 10)) return;
+    if (delayMs(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
     txt5 = loadImageAsSurface("intro_mov/txt5.png");
     SDL_BlitSurface(txt5, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt5);
-    if (delayMs(60 * 10)) return;
+    if (delayMs(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
     txt6 = loadImageAsSurface("intro_mov/txt6.png");
     SDL_BlitSurface(txt6, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt6);
-    if (delayMs(60 * 10)) return;
+    if (delayMs(textDelayMs)) return;
     /*end text*/
 
     ninjaborn = loadImageAsSurface("intro_mov/ninja_born.png");
@@ -390,12 +391,12 @@ void playIntroMovie() {
     SDL_Flip(screen);
     SDL_FreeSurface(backdrop);
     SDL_FreeSurface(ninjaborn);
-    if (delayMs(60 * 10)) return;
+    if (delayMs(60 * 30)) return;
 
     /* free the memory we've used for the movie */
 }
 
-int delayMs(const int msToDelay) {
+int delayMs(const unsigned int msToDelay) {
     int msecs_waited = 0;
     while(msecs_waited < msToDelay) {
         msecs_waited += 10;
