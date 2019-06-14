@@ -36,7 +36,7 @@ void special() {
     }
 }
 
-#define SPECIAL_ATTACK_SPEED 15
+#define SPECIAL_ATTACK_SPEED 25
 
 void special_throw() {
     /*************************************************
