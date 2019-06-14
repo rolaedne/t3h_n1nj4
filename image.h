@@ -1,7 +1,7 @@
 #ifndef IMAGE_H
-#define	IMAGE_H
+#define IMAGE_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -10,8 +10,8 @@ extern "C" {
 
 SDL_Surface* loadImageAsSurface(const char* filename);
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* PARTICLES_H */
+#endif /* PARTICLES_H */

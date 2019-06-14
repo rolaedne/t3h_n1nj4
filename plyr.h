@@ -1,14 +1,7 @@
-/* 
- * File:   plyr.h
- * Author: id10t
- *
- * Created on September 6, 2009, 3:01 PM
- */
-
 #ifndef _PLYR_H
-#define	_PLYR_H
+#define _PLYR_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -48,9 +41,9 @@ void winner();
 
 
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* _PLYR_H */
+#endif /* _PLYR_H */
 

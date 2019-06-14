@@ -1,14 +1,7 @@
-/* 
- * File:   nmy.h
- * Author: id10t
- *
- * Created on September 6, 2009, 3:00 PM
- */
-
 #ifndef _NMY_H
-#define	_NMY_H
+#define _NMY_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -68,9 +61,9 @@ void enemyai();
 
 
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* _NMY_H */
+#endif /* _NMY_H */
 

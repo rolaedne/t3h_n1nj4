@@ -1,4 +1,3 @@
-
 /*******************************************
  *Roderick Newill
  *world.c
@@ -42,7 +41,7 @@ void graphics_load() {
 
     /*inits some world images*/
     ninja = loadImageAsSurface("chars/ninja.new2.png");
-    
+
     worldfloor = loadImageAsSurface("lvl/floor.png");
     worldbrick[0] = loadImageAsSurface("lvl/brick0.png");
     worldbrick[1] = loadImageAsSurface("lvl/brick1.png");
@@ -90,14 +89,14 @@ void graphics_free() {
         SDL_FreeSurface(worldfloor);
         worldfloor = NULL;
     }
-    
+
     for(i = 0; i < BRICKS_WORLD; ++i) {
         if(worldbrick[i] != NULL) {
             SDL_FreeSurface(worldbrick[i]);
             worldbrick[i] = NULL;
         }
     }
-    
+
     for(i = 0; i < BRICKS_DAMAGE; ++i) {
         if(dmgbrick[i] != NULL) {
             SDL_FreeSurface(dmgbrick[i]);
@@ -201,7 +200,7 @@ void buildw() {
     sprintf(lvlname, "lvl/foreground%d.png", worldnum);
 
     foreground = NULL; //loadImageAsSurface(lvlname);
- 
+
     fscanf(world_file, "%d", &x);
     enemymax = x; /*set max amount of enemies*/
     for (i = 0; i < NMY && i < enemymax; i++) {/*set enemy destinations from file*/
@@ -398,14 +397,14 @@ void blood(SDL_Rect bleed) {
     y = bleed.y + bleed.h / 2;
     //printf("DEBUG: blood(%d, %d)\n", x, y);
     x += wrldps.x;
-    
+
     addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0);
     addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(6, 20), 1.0);
     addParticle(blood1, x, y, bRand(1, 4) *-1, -1 * bRand(2, 8), 1.0);
     addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0);
     addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(4, 12), 1.0);
-    
-    
+
+
     //SDL_BlitSurface(blood1, NULL, background, &bleed);
 }
 

@@ -1,10 +1,3 @@
-/* 
- * File:   main.c
- * Author: id10t
- *
- * Created on September 6, 2009, 2:48 PM
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL/SDL.h>
@@ -34,7 +27,7 @@ int main(int argc, char **argv) {
 
     Uint8* keys;
     Uint32 ticks, delay, tmp_ps;
-    
+
     if (SDL_Init(SDL_INIT_VIDEO) == -1) {
         fprintf(stderr, "Error initializing SDL: %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
@@ -336,7 +329,7 @@ void playIntroMovie() {
     /*****************************************
      *beutiful text
      ******************************************/
-   
+
     ndest.x = 20;
     ndest.y = 50;
 
@@ -410,6 +403,7 @@ int delayMs(const unsigned int msToDelay) {
                     if (event.key.keysym.sym == SDLK_SPACE) {
                         return 1;
                     }
+                    continue;
                 default:
                     continue;
             }

@@ -1,4 +1,3 @@
-
 #include "particles.h"
 #include "world.h"
 #include <stddef.h>

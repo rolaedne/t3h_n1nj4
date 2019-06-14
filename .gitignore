@@ -1,3 +1,6 @@
 *.o
 teh_ninja
 .DS_Store
+.cproject
+.project
+.settings/

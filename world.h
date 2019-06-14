@@ -1,7 +1,7 @@
 #ifndef _WORLD_H
-#define	_WORLD_H
+#define _WORLD_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /*******************************************
@@ -48,9 +48,8 @@ int twoblock_col(int bb1x, int bb1y, int bb1w, int bb1h,
 int isCollision(int x, int y);
 
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* _WORLD_H */
-
+#endif /* _WORLD_H */
