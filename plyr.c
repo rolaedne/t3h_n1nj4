@@ -163,6 +163,7 @@ void dead() {
     /******************************
      *will be dead charecter screen
      *******************************/
+    deaths += 1;
     SDL_Surface *death_screen;
     BOOLEAN done = FALSE;
 

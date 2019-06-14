@@ -46,6 +46,7 @@ int main(int argc, char **argv) {
 
     /*init variables*/
     score = 100; /*start w/ 100 points since stars take poaints*/
+    deaths = 0;
     attacklen = 0;
     jump = 0;
     gravity_compound = 0;
@@ -58,6 +59,7 @@ int main(int argc, char **argv) {
     set_screen();
     SDL_BlitSurface(ninja, &ninja_src, screen, &dest);
     SDL_Flip(screen);
+    int skipLevel = 0;
 
     while (SDL_PollEvent(&event) != -1) {//main even loop
         keys = SDL_GetKeyState(NULL);
@@ -67,6 +69,10 @@ int main(int argc, char **argv) {
                 exit(0);
                 break;
             case SDL_KEYDOWN: //registars key down
+                if (event.key.keysym.sym==SDLK_TAB && skipLevel == 0) {
+                    skipLevel = 1;
+                    break;
+                }
                 if (keys[SDLK_DOWN]) {
                     special();
                 }
@@ -100,6 +106,10 @@ int main(int argc, char **argv) {
                 }
                 break;
             case SDL_KEYUP:
+                if (event.key.keysym.sym==SDLK_TAB && skipLevel == 1) {
+                    skipLevel = 2;
+                    break;
+                }
                 if (ninja_src.x >= 180) {
                     ninja_src.x = 180;
                 } else {
@@ -128,6 +138,12 @@ int main(int argc, char **argv) {
                 }
 
                 break;
+        }
+        if (skipLevel == 2) {
+            printf("DEBUG: Cheater, skipping level %d\n", worldnum);
+            worldnum++;
+            buildw();
+            skipLevel = 0;
         }
         if (jump != 0) {
             ninja_src.y = 0;

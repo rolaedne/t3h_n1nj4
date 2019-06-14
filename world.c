@@ -30,7 +30,7 @@ void graphics_load() {
     printf("DEBUG: graphics_load()\n");
     /*TODO: load checks on these*/
     /*init images*/
-    foreground = loadImageAsSurface("lvl/foreground0.png");
+    foreground = NULL; //loadImageAsSurface("lvl/foreground0.png");
     wscore = loadImageAsSurface("lvl/score.png");
     number = loadImageAsSurface("lvl/number.png");
     blood1 = loadImageAsSurface("bloods/blood4.png");
@@ -193,15 +193,8 @@ void buildw() {
         exit(EXIT_SUCCESS);
     }
 
-    sprintf(lvlname, "lvl/background%d.png", worldnum);
-
-    background = loadImageAsSurface(lvlname);
-
-    sprintf(lvlname, "lvl/foreground%d.png", worldnum);
-
-    foreground = NULL; //loadImageAsSurface(lvlname);
-
     fscanf(world_file, "%d", &x);
+
     enemymax = x; /*set max amount of enemies*/
     for (i = 0; i < NMY && i < enemymax; i++) {/*set enemy destinations from file*/
         fscanf(world_file, "%d", &x);
@@ -259,6 +252,37 @@ void buildw() {
 
     fscanf(world_file, "%d", &x);
     world_length = x;
+
+    //sprintf(lvlname, "lvl/background%d.png", worldnum);
+    //background = loadImageAsSurface(lvlname);
+    background = createSurface(x * BRICK_WIDTH, SCREENHEIGHT);
+    SDL_Rect dst; dst.x = 0; dst.y = 0; dst.w = background->w; dst.h = background->h;
+
+    SDL_FillRect(background, &dst, SDL_MapRGB(background->format, 0, 0, 0)); // black
+
+    int bandHeight = 10 + deaths + (5 * worldnum);
+    if (bandHeight > 25) bandHeight = 25;
+
+    int backgroundHeight = background->h;
+    int bands = backgroundHeight / bandHeight;
+
+    int startColor = 64 + (deaths * 2) + (5 * worldnum);
+    if (startColor > 128) startColor = 128;
+
+    int maxBaseColor = 255;
+    int colorStep = (maxBaseColor - startColor) / bands;
+
+    dst.h = bandHeight;
+    for (int i = 0; i < bands; i++) {
+        dst.y = i * bandHeight;
+        int baseColor = startColor + (i * colorStep);
+        if (baseColor > maxBaseColor) baseColor = maxBaseColor;
+        SDL_FillRect(background, &dst, SDL_MapRGB(background->format, baseColor / 2 + worldnum, baseColor / 2 + worldnum, baseColor));
+    }
+
+    //sprintf(lvlname, "lvl/foreground%d.png", worldnum);
+    //foreground = NULL; //loadImageAsSurface(lvlname);
+
     while (!feof(world_file)) {/*creates game world from frile*/
         fscanf(world_file, "%d", &x);
         if (t == -1) {

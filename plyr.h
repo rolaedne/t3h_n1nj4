@@ -30,6 +30,7 @@ SDL_Rect ninja_src;
 int gravity_compound;
 int jump, attack, sattack, attacklen;
 int score;
+int deaths;
 
 void jumping(int jump);
 void physics();
