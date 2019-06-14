@@ -50,6 +50,7 @@ void special_throw() {
 
     if (sattack == 1) {
         spdest.x += SPECIAL_ATTACK_SPEED;
+        spdest.y += 1;
         attacklen--;
         if ((attacklen % 5) == 0) {
             SDL_BlitSurface(sweapon1_1, NULL, screen, &spdest);
@@ -58,6 +59,7 @@ void special_throw() {
         }
     } else if (sattack == 2) {
         spdest.x -= SPECIAL_ATTACK_SPEED;
+        spdest.y += 1;
         attacklen--;
         if ((attacklen % 2) == 0) {
             SDL_BlitSurface(sweapon1_1, NULL, screen, &spdest);
