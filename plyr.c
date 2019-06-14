@@ -13,6 +13,7 @@
 #include "world.h"
 #include "nmy.h"
 #include "plyr.h"
+#include "image.h"
 
 void special() {
     /*************************************************
@@ -69,16 +70,14 @@ void special_throw() {
 }
 
 void winner() {
+    printf("DEBUG: winner\n");
     /******************************************
      *will have the winning stuff
      *******************************************/
-    SDL_Surface *winnerimg = IMG_Load("lvl/winner.png");
-    if (winnerimg == NULL) {
-        fprintf(stderr, "Error loading victory image: %s\n", IMG_GetError());
-        exit(EXIT_FAILURE);
-    }
+    SDL_Surface *winnerimg = loadImageAsSurface("lvl/winner.png");
     SDL_BlitSurface(winnerimg, NULL, screen, NULL);
     SDL_Flip(screen);
+    SDL_PumpEvents();
     SDL_Delay(60 * 45);
     SDL_FreeSurface(winnerimg);
     winnerimg = NULL;
@@ -170,7 +169,7 @@ void dead() {
     SDL_Flip(screen);
     SDL_Delay(1000);
 
-    death_screen = IMG_Load("lvl/dead.png");
+    death_screen = loadImageAsSurface("lvl/dead.png");
     SDL_BlitSurface(death_screen, NULL, screen, NULL); /*print dead screen*/
     SDL_Flip(screen);
     SDL_FreeSurface(death_screen);

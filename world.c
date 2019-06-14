@@ -15,6 +15,7 @@
 #include "nmy.h"
 #include "plyr.h"
 #include "particles.h"
+#include "image.h"
 
 int isCollision(int x, int y) {
     int row, col;
@@ -27,29 +28,29 @@ int isCollision(int x, int y) {
 }
 
 void graphics_load() {
-    printf("DEBUG: graphics_load()");
+    printf("DEBUG: graphics_load()\n");
     /*TODO: load checks on these*/
     /*init images*/
-    foreground = IMG_Load("lvl/foreground0.png");
-    wscore = IMG_Load("lvl/score.png");
-    number = IMG_Load("lvl/number.png");
-    blood1 = IMG_Load("bloods/blood4.png");
-    snow = IMG_Load("bloods/snow.png");
-    ash = IMG_Load("bloods/ash.png");
-    sweapon1_1 = IMG_Load("weapons/star1.png");
-    sweapon1_2 = IMG_Load("weapons/star2.png");
+    foreground = loadImageAsSurface("lvl/foreground0.png");
+    wscore = loadImageAsSurface("lvl/score.png");
+    number = loadImageAsSurface("lvl/number.png");
+    blood1 = loadImageAsSurface("bloods/blood4.png");
+    snow = loadImageAsSurface("bloods/snow.png");
+    ash = loadImageAsSurface("bloods/ash.png");
+    sweapon1_1 = loadImageAsSurface("weapons/star1.png");
+    sweapon1_2 = loadImageAsSurface("weapons/star2.png");
 
     /*inits some world images*/
-    ninja = IMG_Load("chars/ninja.new2.png");
+    ninja = loadImageAsSurface("chars/ninja.new2.png");
     
-    worldfloor = IMG_Load("lvl/floor.png");
-    worldbrick[0] = IMG_Load("lvl/brick0.png");
-    worldbrick[1] = IMG_Load("lvl/brick1.png");
-    worldbrick[2] = IMG_Load("lvl/brick2.png");
-    worldbrick[3] = IMG_Load("lvl/brick3.png");
-    dmgbrick[0] = IMG_Load("lvl/dbrick0.png");
-    dmgbrick[1] = IMG_Load("lvl/dbrick1.png");
-    dmgbrick[2] = IMG_Load("lvl/dbrick2.png");
+    worldfloor = loadImageAsSurface("lvl/floor.png");
+    worldbrick[0] = loadImageAsSurface("lvl/brick0.png");
+    worldbrick[1] = loadImageAsSurface("lvl/brick1.png");
+    worldbrick[2] = loadImageAsSurface("lvl/brick2.png");
+    worldbrick[3] = loadImageAsSurface("lvl/brick3.png");
+    dmgbrick[0] = loadImageAsSurface("lvl/dbrick0.png");
+    dmgbrick[1] = loadImageAsSurface("lvl/dbrick1.png");
+    dmgbrick[2] = loadImageAsSurface("lvl/dbrick2.png");
 }
 
 
@@ -195,18 +196,11 @@ void buildw() {
 
     sprintf(lvlname, "lvl/background%d.png", worldnum);
 
-    background = IMG_Load(lvlname);
-    if(background == NULL) {
-        fprintf(stderr, "Error loading background image: %s\n", IMG_GetError());
-        exit(EXIT_FAILURE);
-    }
+    background = loadImageAsSurface(lvlname);
 
     sprintf(lvlname, "lvl/foreground%d.png", worldnum);
 
-    foreground = IMG_Load(lvlname);
-    if(foreground == NULL) {
-        fprintf(stderr, "Error loading foreground image: %s\n", IMG_GetError());
-    }
+    foreground = NULL; //loadImageAsSurface(lvlname);
  
     fscanf(world_file, "%d", &x);
     enemymax = x; /*set max amount of enemies*/
@@ -219,27 +213,13 @@ void buildw() {
         nmy[i].nmydest.y = x*BRICK_HEIGHT;
         nmy[i].nmy_alive = 1;
         if (nmy[i].nmytype == 0) {/*enemy type 0s quality*/
-            nmy[i].enemies[0] = IMG_Load("chars/turco0.png");
-            if(nmy[i].enemies[0] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
-            nmy[i].enemies[1] = IMG_Load("chars/turco1.png");
-            if(nmy[i].enemies[1] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }            
+            nmy[i].enemies[0] = loadImageAsSurface("chars/turco0.png");
+            nmy[i].enemies[1] = loadImageAsSurface("chars/turco1.png");
+
             /*death image, sword,*/
-            nmy[i].deaths[BYSWORD] = IMG_Load("chars/turco2.png");
-            if(nmy[i].deaths[BYSWORD] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
-            nmy[i].deaths[BYSTAR] = IMG_Load("chars/turco3.png");
-            if(nmy[i].deaths[BYSTAR] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
-            nmy[i].deaths[BYLAVA] = IMG_Load("chars/turco4.png");
-            if(nmy[i].deaths[BYLAVA] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
+            nmy[i].deaths[BYSWORD] = loadImageAsSurface("chars/turco2.png");
+            nmy[i].deaths[BYSTAR] = loadImageAsSurface("chars/turco3.png");
+            nmy[i].deaths[BYLAVA] = loadImageAsSurface("chars/turco4.png");
 
             nmy[i].nmyani = 0; /*what animation frame to start on*/
             nmy[i].nmyanilen = 1; /*home many animations that is zero based*/
@@ -247,22 +227,10 @@ void buildw() {
             nmy[i].speed = 4;
             nmy[i].jmpon = 0;
         } else if (nmy[i].nmytype == 1) {
-            nmy[i].enemies[0] = IMG_Load("chars/one0.png");
-            if(nmy[i].enemies[0] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
-            nmy[i].enemies[1] = IMG_Load("chars/one1.png");
-            if(nmy[i].enemies[1] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
-            nmy[i].enemies[2] = IMG_Load("chars/one2.png");
-            if(nmy[i].enemies[2] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
-            nmy[i].enemies[3] = IMG_Load("chars/one3.png");
-            if(nmy[i].enemies[3] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
+            nmy[i].enemies[0] = loadImageAsSurface("chars/one0.png");
+            nmy[i].enemies[1] = loadImageAsSurface("chars/one1.png");
+            nmy[i].enemies[2] = loadImageAsSurface("chars/one2.png");
+            nmy[i].enemies[3] = loadImageAsSurface("chars/one3.png");
 
             nmy[i].nmyani = 0; /*what animation frame to start on*/
             nmy[i].nmyanilen = 3; /*home many animations that is zero based*/
@@ -270,37 +238,18 @@ void buildw() {
             nmy[i].speed = 5;
             nmy[i].jmpon = 0;
         } else if (nmy[i].nmytype == 2) {
-            nmy[i].enemies[0] = IMG_Load("chars/rninja0.png");
-            if(nmy[i].enemies[0] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
-            nmy[i].enemies[1] = IMG_Load("chars/rninja1.png");
-            if(nmy[i].enemies[1] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
-            nmy[i].enemies[2] = IMG_Load("chars/rninja2.png");
-            if(nmy[i].enemies[2] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
-            nmy[i].enemies[3] = IMG_Load("chars/rninja3.png");
-            if(nmy[i].enemies[3] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
-            nmy[i].enemies[4] = IMG_Load("chars/rninja4.png");
-            if(nmy[i].enemies[4] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
-            nmy[i].enemies[5] = IMG_Load("chars/rninja5.png");
-            if(nmy[i].enemies[5] == NULL) {
-                fprintf(stderr, "Error loading enemy image: %s\n", IMG_GetError());
-            }
+            nmy[i].enemies[0] = loadImageAsSurface("chars/rninja0.png");
+            nmy[i].enemies[1] = loadImageAsSurface("chars/rninja1.png");
+            nmy[i].enemies[2] = loadImageAsSurface("chars/rninja2.png");
+            nmy[i].enemies[3] = loadImageAsSurface("chars/rninja3.png");
+            nmy[i].enemies[4] = loadImageAsSurface("chars/rninja4.png");
+            nmy[i].enemies[5] = loadImageAsSurface("chars/rninja5.png");
 
             nmy[i].nmyani = 0; /*what animation frame to start on*/
             nmy[i].nmyanilen = 4; /*home many animations that is zero based*/
             nmy[i].jmp = -55;
             nmy[i].speed = 8;
             nmy[i].jmpon = 0;
-
         }
     }
 
@@ -447,7 +396,7 @@ void blood(SDL_Rect bleed) {
     int x, y;
     x = bleed.x + bleed.w / 2;
     y = bleed.y + bleed.h / 2;
-    printf("DEBUG: blood(%d, %d)\n", x, y);
+    //printf("DEBUG: blood(%d, %d)\n", x, y);
     x += wrldps.x;
     
     addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0);

@@ -14,6 +14,7 @@
 #include "nmy.h"
 #include "plyr.h"
 #include "particles.h"
+#include "image.h"
 
 #define DTIME 5
 #define MSECS_PER_FRAME 1000/30
@@ -21,6 +22,8 @@
 void startScreen();
 void playIntroMovie();
 void letItSnow();
+void updateScreen();
+int delayMs(const int);
 
 int main(int argc, char **argv) {
     /*********************************************************
@@ -38,7 +41,7 @@ int main(int argc, char **argv) {
     }
     atexit(SDL_Quit);
 
-    screen = SDL_SetVideoMode(640, 480, 0, SDL_DOUBLEBUF); /*creats screen*/
+    screen = SDL_SetVideoMode(640, 480, 0, SDL_DOUBLEBUF); /*creates screen*/
     if (screen == NULL) {
         fprintf(stderr, "Error setting video mode 640x480: %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
@@ -209,20 +212,16 @@ void letItSnow(SDL_Surface *precipitation, int snowFrequency) {
 void startScreen() {
     SDL_Surface *start_screen_surface;
     unsigned int msecs_waited;
-    const unsigned int max_wait_length = 6000;
+    const unsigned int max_wait_length = 2000;
 
     printf("DEBUG: startScreen\n");
 
-    start_screen_surface = IMG_Load("lvl/start_screen.png");
-    if(start_screen_surface == NULL) {
-        fprintf(stderr, "Error loading image: %s\n", IMG_GetError());
-        exit(EXIT_FAILURE);
-    }
+    start_screen_surface = loadImageAsSurface("lvl/start_screen.png");
 
     SDL_BlitSurface(start_screen_surface, NULL, screen, NULL);
-    SDL_Flip(screen);
+    SDL_PumpEvents();
+    updateScreen();
 
-    //SDL_FreeSurface(ss);
 
     /* wait 6000 milliseconds for the user to press spacebar; if they
      * don't, run the intro movie. */
@@ -230,27 +229,14 @@ void startScreen() {
         msecs_waited = 0;
         while(msecs_waited < max_wait_length) {
             msecs_waited += 10;
-            SDL_Delay(10);
-            if (SDL_PollEvent(&event)) {
-                switch (event.type) {
-                    case SDL_QUIT:
-                        SDL_FreeSurface(start_screen_surface);
-                        exit(EXIT_SUCCESS);
-                        break; /* unreachable, but here for clarity */
-                    case SDL_KEYUP:
-                    /* case SDL_KEYDOWN: */
-                        if (event.key.keysym.sym == SDLK_SPACE) {
-                            SDL_FreeSurface(start_screen_surface);
-                            return;
-                        }
-                    default:
-                        continue;
-                }
+            if (delayMs(10)) {
+                SDL_FreeSurface(start_screen_surface);
+                return;
             }
         }
         playIntroMovie();
         SDL_BlitSurface(start_screen_surface, NULL, screen, NULL);
-        SDL_Flip(screen);
+        updateScreen();
     }
 }
 
@@ -270,16 +256,16 @@ void playIntroMovie() {
 
     color = SDL_MapRGB(screen->format, 0, 0, 0);
 
-    lightn = IMG_Load("intro_mov/lightening.png");
+    lightn = loadImageAsSurface("intro_mov/lightening.png");
     SDL_BlitSurface(lightn, NULL, screen, NULL);
-    SDL_Flip(screen);
+    updateScreen();
     SDL_FreeSurface(lightn);
-    SDL_Delay(60 * 5);
+    if (delayMs(60 * 5)) return;
 
-    backdrop = IMG_Load("intro_mov/backdrop.png");
+    backdrop = loadImageAsSurface("intro_mov/backdrop.png");
     SDL_BlitSurface(backdrop, NULL, screen, NULL);
-    SDL_Flip(screen);
-    SDL_Delay(60 * 5);
+    updateScreen();
+    if (delayMs(60 * 5)) return;
 
     ndest.y = 200;
     ndest.x = 480;
@@ -288,7 +274,7 @@ void playIntroMovie() {
     bardest.h = 240;
     bardest.w = 640;
 
-    rl = IMG_Load("intro_mov/redleg.png");
+    rl = loadImageAsSurface("intro_mov/redleg.png");
     for (i = 0; i < 50; i++) {
         SDL_BlitSurface(backdrop, NULL, screen, NULL);
         if ((i % 5) == 0) {
@@ -303,11 +289,11 @@ void playIntroMovie() {
         SDL_BlitSurface(rl, NULL, screen, &ndest);
         SDL_FillRect(screen, &bardest, color);
         SDL_Flip(screen);
-        SDL_Delay(30);
+        if (delayMs(30)) return;
     }
     SDL_FreeSurface(rl);
 
-    bl = IMG_Load("intro_mov/blackleg.png");
+    bl = loadImageAsSurface("intro_mov/blackleg.png");
     ndest.x = 120;
     for (i = 0; i < 50; i++) {
         SDL_BlitSurface(backdrop, NULL, screen, NULL);
@@ -323,18 +309,18 @@ void playIntroMovie() {
         SDL_BlitSurface(bl, NULL, screen, &ndest);
         SDL_FillRect(screen, &bardest, color);
         SDL_Flip(screen);
-        SDL_Delay(30);
+        if (delayMs(30)) return;
     }
     SDL_FreeSurface(bl);
 
-    grass = IMG_Load("intro_mov/grass.png");
+    grass = loadImageAsSurface("intro_mov/grass.png");
     SDL_BlitSurface(grass, NULL, screen, NULL);
     SDL_Flip(screen);
     SDL_FreeSurface(grass);
-    SDL_Delay(60 * 2);
+    if (delayMs(60 * 2)) return;
 
-    black = IMG_Load("intro_mov/black.png");
-    red = IMG_Load("intro_mov/red.png");
+    black = loadImageAsSurface("intro_mov/black.png");
+    red = loadImageAsSurface("intro_mov/red.png");
     ndest.x = 0;
     ndest.y = SCREENHEIGHT / 2;
     SDL_BlitSurface(black, NULL, screen, &ndest);
@@ -344,9 +330,7 @@ void playIntroMovie() {
     SDL_Flip(screen);
     SDL_FreeSurface(black);
     SDL_FreeSurface(red);
-    SDL_Delay(60 * 5);
-
-
+    if (delayMs(60 * 5)) return;
 
     /*****************************************
      *beutiful text
@@ -357,59 +341,83 @@ void playIntroMovie() {
 
     SDL_FillRect(screen, NULL, color);
     SDL_BlitSurface(backdrop, NULL, screen, NULL);
-    txt1 = IMG_Load("intro_mov/txt1.png");
+    txt1 = loadImageAsSurface("intro_mov/txt1.png");
     SDL_BlitSurface(txt1, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt1);
-    SDL_Delay(60 * 10);
+    if (delayMs(60 * 10)) return;
     ndest.x += 50;
     ndest.y += 50;
-    txt2 = IMG_Load("intro_mov/txt2.png");
+    txt2 = loadImageAsSurface("intro_mov/txt2.png");
     SDL_BlitSurface(txt2, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt2);
-    SDL_Delay(60 * 10);
+    if (delayMs(60 * 10)) return;
     ndest.x += 50;
     ndest.y += 50;
-    txt3 = IMG_Load("intro_mov/txt3.png");
+    txt3 = loadImageAsSurface("intro_mov/txt3.png");
     SDL_BlitSurface(txt3, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt3);
-    SDL_Delay(60 * 10);
+    if (delayMs(60 * 10)) return;
     ndest.x += 50;
     ndest.y += 50;
-    txt4 = IMG_Load("intro_mov/txt4.png");
+    txt4 = loadImageAsSurface("intro_mov/txt4.png");
     SDL_BlitSurface(txt4, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt4);
-    SDL_Delay(60 * 10);
+    if (delayMs(60 * 10)) return;
     ndest.x += 50;
     ndest.y += 50;
-    txt5 = IMG_Load("intro_mov/txt5.png");
+    txt5 = loadImageAsSurface("intro_mov/txt5.png");
     SDL_BlitSurface(txt5, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt5);
-    SDL_Delay(60 * 10);
+    if (delayMs(60 * 10)) return;
     ndest.x += 50;
     ndest.y += 50;
-    txt6 = IMG_Load("intro_mov/txt6.png");
+    txt6 = loadImageAsSurface("intro_mov/txt6.png");
     SDL_BlitSurface(txt6, NULL, screen, &ndest);
     SDL_Flip(screen);
     SDL_FreeSurface(txt6);
-    SDL_Delay(60 * 20);
+    if (delayMs(60 * 10)) return;
     /*end text*/
 
-    ninjaborn = IMG_Load("intro_mov/ninja_born.png");
+    ninjaborn = loadImageAsSurface("intro_mov/ninja_born.png");
     SDL_FillRect(screen, NULL, color);
     SDL_BlitSurface(backdrop, NULL, screen, NULL);
     SDL_BlitSurface(ninjaborn, NULL, screen, NULL);
     SDL_Flip(screen);
     SDL_FreeSurface(backdrop);
     SDL_FreeSurface(ninjaborn);
-    SDL_Delay(60 * 10);
+    if (delayMs(60 * 10)) return;
 
     /* free the memory we've used for the movie */
+}
 
-    
+int delayMs(const int msToDelay) {
+    int msecs_waited = 0;
+    while(msecs_waited < msToDelay) {
+        msecs_waited += 10;
+        SDL_Delay(10);
+        if (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT:
+                    exit(EXIT_SUCCESS);
+                    break; /* unreachable, but here for clarity */
+                case SDL_KEYUP:
+                    if (event.key.keysym.sym == SDLK_SPACE) {
+                        return 1;
+                    }
+                default:
+                    continue;
+            }
+        }
+    }
+    return 0;
+}
+
+void updateScreen() {
+    SDL_Flip(screen);
 }
 
