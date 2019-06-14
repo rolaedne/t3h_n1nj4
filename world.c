@@ -183,7 +183,7 @@ void buildw() {
 
     /*world file to be used*/
 
-    sprintf(lvlname, "lvl_files/lvl%d.dat", worldnum);
+    sprintf(lvlname, "lvl_files/lvl%d.txt", worldnum);
     world_file = fopen(lvlname, "r");
 
     if (world_file == NULL) {/*no more worlds to be read in*/
