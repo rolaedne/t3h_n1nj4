@@ -15,21 +15,21 @@
 #include "plyr.h"
 #include "particles.h"
 #include "image.h"
+#include "utils.h"
 
-int isCollision(int x, int y) {
-    int row, col;
-    row = y / BRICK_HEIGHT;
-    col = x / BRICK_WIDTH;
-    //printf("BRICK: %dx%d\n", row, col);
+int isCollision(const int x, const int y) {
+    const int row = y / BRICK_HEIGHT;
     if (row > WORLD_ROWS || row < 0) { return 1; }
+    const int col = x / BRICK_WIDTH;
     if (col > WORLD_COLS || col < 0) { return 1; }
+    //printf("BRICK: %dx%d\n", row, col);
     return world[row][col] > 0;
 }
 
 void graphics_load() {
     printf("DEBUG: graphics_load()\n");
-    /*TODO: load checks on these*/
     /*init images*/
+    /* TODO: Move world data from code to data files. */
     foreground = NULL; //loadImageAsSurface("lvl/foreground0.png");
     wscore = loadImageAsSurface("lvl/score.png");
     number = loadImageAsSurface("lvl/number.png");
@@ -57,53 +57,18 @@ void graphics_free() {
     int i;
 
     printf("DEBUG: graphics_free()\n");
-    if(foreground != NULL) {
-        SDL_FreeSurface(foreground);
-        foreground = NULL;
-    }
-    if(wscore != NULL) {
-        SDL_FreeSurface(wscore);
-        wscore = NULL;
-    }
-    if(number != NULL) {
-        SDL_FreeSurface(number);
-        number = NULL;
-    }
-    if(blood1 != NULL) {
-        SDL_FreeSurface(blood1);
-        blood1 = NULL;
-    }
-    if(sweapon1_1 != NULL) {
-        SDL_FreeSurface(sweapon1_1);
-        sweapon1_2 = NULL;
-    }
-    if(sweapon1_2 != NULL) {
-        SDL_FreeSurface(sweapon1_2);
-        sweapon1_2 = NULL;
-    }
-    if(ninja != NULL) {
-        SDL_FreeSurface(ninja);
-        ninja = NULL;
-    }
-    if(worldfloor != NULL) {
-        SDL_FreeSurface(worldfloor);
-        worldfloor = NULL;
-    }
 
-    for(i = 0; i < BRICKS_WORLD; ++i) {
-        if(worldbrick[i] != NULL) {
-            SDL_FreeSurface(worldbrick[i]);
-            worldbrick[i] = NULL;
-        }
-    }
+    freeSurface(&foreground);
+    freeSurface(&wscore);
+    freeSurface(&number);
+    freeSurface(&blood1);
+    freeSurface(&sweapon1_1);
+    freeSurface(&sweapon1_2);
+    freeSurface(&ninja);
+    freeSurface(&worldfloor);
 
-    for(i = 0; i < BRICKS_DAMAGE; ++i) {
-        if(dmgbrick[i] != NULL) {
-            SDL_FreeSurface(dmgbrick[i]);
-            dmgbrick[i] = NULL;
-        }
-    }
-
+    for(i = 0; i < BRICKS_WORLD; ++i) freeSurface(&worldbrick[i]);
+    for(i = 0; i < BRICKS_DAMAGE; ++i) freeSurface(&dmgbrick[i]);
 }
 
 
@@ -123,28 +88,12 @@ void buildw() {
 
     printf("DEBUG: buildw()\n");
     /* free the memory used by world, if any*/
-    if(background != NULL) {
-        SDL_FreeSurface(background);
-        background = NULL;
-    }
-
-    for(i = 0; i< NMY; ++i) {
+    freeSurface(&background);
+    for(i = 0; i < NMY; ++i) {
         nmy[i].onscreen = 0;
-        for(x = 0; x < NMY_FRAMES; ++x) {
-            if(nmy[i].enemies[x] != NULL) {
-                SDL_FreeSurface(nmy[i].enemies[x]);
-                nmy[i].enemies[x] = NULL;
-            }
-        }
-        for(x = 0; x < NMY_DEATHS; ++x) {
-            if(nmy[i].deaths[x] != NULL) {
-                SDL_FreeSurface(nmy[i].deaths[x]);
-                nmy[i].deaths[x] = NULL;
-            }
-        }
+        for(x = 0; x < NMY_FRAMES; ++x) freeSurface(&nmy[i].enemies[x]);
+        for(x = 0; x < NMY_DEATHS; ++x) freeSurface(&nmy[i].deaths[x]);
     }
-
-
 
     /********************************************
      *world stuff needed to make world
@@ -204,6 +153,7 @@ void buildw() {
         fscanf(world_file, "%d", &x);
         nmy[i].nmydest.y = x*BRICK_HEIGHT;
         nmy[i].nmy_alive = 1;
+        /* TODO: Move enemy information out of code and into data files. */
         if (nmy[i].nmytype == 0) {/*enemy type 0s quality*/
             nmy[i].enemies[0] = loadImageAsSurface("chars/turco0.png");
             nmy[i].enemies[1] = loadImageAsSurface("chars/turco1.png");
@@ -253,6 +203,7 @@ void buildw() {
     fscanf(world_file, "%d", &x);
     world_length = x;
 
+    // START: Generate background image
     //sprintf(lvlname, "lvl/background%d.png", worldnum);
     //background = loadImageAsSurface(lvlname);
     background = createSurface(x * BRICK_WIDTH, SCREENHEIGHT);
@@ -279,6 +230,7 @@ void buildw() {
         if (baseColor > maxBaseColor) baseColor = maxBaseColor;
         SDL_FillRect(background, &dst, SDL_MapRGB(background->format, baseColor / 2 + worldnum, baseColor / 2 + worldnum, baseColor));
     }
+    // END: Generate background image
 
     //sprintf(lvlname, "lvl/foreground%d.png", worldnum);
     //foreground = NULL; //loadImageAsSurface(lvlname);
@@ -306,46 +258,33 @@ void set_screen() {
     printf("DEBUG: set_screen()\n");
     SDL_BlitSurface(background, &wrldps, screen, NULL);
 
+    /* TODO: Move tile information out of code and into data files. */
     for (i = 0; i < world_length; i++) {
         for (t = 0; t < world_height; t++) {
+            worlddest.y = t*BRICK_HEIGHT;
+            worlddest.x = i*BRICK_WIDTH;
             if (world[t][i] == 1) {
-                worlddest.y = t*BRICK_HEIGHT;
-                worlddest.x = i*BRICK_WIDTH;
                 SDL_BlitSurface(worldfloor, NULL, background, &worlddest);
                 SDL_BlitSurface(worldfloor, NULL, screen, &worlddest);
             } else if (world[t][i] == 2) {
-                worlddest.y = t*BRICK_HEIGHT;
-                worlddest.x = i*BRICK_WIDTH;
                 SDL_BlitSurface(worldbrick[0], NULL, background, &worlddest);
                 SDL_BlitSurface(worldbrick[0], NULL, screen, &worlddest);
             } else if (world[t][i] == 3) {
-                worlddest.y = t*BRICK_HEIGHT;
-                worlddest.x = i*BRICK_WIDTH;
                 SDL_BlitSurface(worldbrick[1], NULL, background, &worlddest);
                 SDL_BlitSurface(worldbrick[1], NULL, screen, &worlddest);
             } else if (world[t][i] == 4) {
-                worlddest.y = t*BRICK_HEIGHT;
-                worlddest.x = i*BRICK_WIDTH;
                 SDL_BlitSurface(worldbrick[2], NULL, background, &worlddest);
                 SDL_BlitSurface(worldbrick[2], NULL, screen, &worlddest);
             } else if (world[t][i] == 5) {
-                worlddest.y = t*BRICK_HEIGHT;
-                worlddest.x = i*BRICK_WIDTH;
                 SDL_BlitSurface(worldbrick[3], NULL, background, &worlddest);
                 SDL_BlitSurface(worldbrick[3], NULL, screen, &worlddest);
             } else if (world[t][i] == 6) {
-                worlddest.y = t*BRICK_HEIGHT;
-                worlddest.x = i*BRICK_WIDTH;
                 SDL_BlitSurface(dmgbrick[0], NULL, background, &worlddest);
                 SDL_BlitSurface(dmgbrick[0], NULL, screen, &worlddest);
             } else if (world[t][i] == 7) {
-                worlddest.y = t*BRICK_HEIGHT;
-                worlddest.x = i*BRICK_WIDTH;
                 SDL_BlitSurface(dmgbrick[1], NULL, background, &worlddest);
                 SDL_BlitSurface(dmgbrick[1], NULL, screen, &worlddest);
             } else if (world[t][i] == 8) {
-                worlddest.y = t*BRICK_HEIGHT;
-                worlddest.x = i*BRICK_WIDTH;
                 SDL_BlitSurface(dmgbrick[2], NULL, background, &worlddest);
                 SDL_BlitSurface(dmgbrick[2], NULL, screen, &worlddest);
             }
@@ -374,43 +313,8 @@ void world_mover() {
     }
 }
 
-int twoblock_col(int bb1x, int bb1y, int bb1w, int bb1h,
-        int bb2x, int bb2y, int bb2w, int bb2h) {
-    /****************************************
-     *checking for bounding block collisions
-     *****************************************/
 
-    /*check upper left corner of bb2*/
-    if (bb1x <= bb2x && bb2x <= bb1x + bb1w)
-        if (bb1y <= bb2y && bb2y <= bb1y + bb1h)
-            return 1;
-
-    /*check upper right corner of bb2*/
-    if (bb1x <= bb2x + bb2w && bb2x + bb2w <= bb1x + bb1w)
-        if (bb1y <= bb2y && bb2y <= bb1y + bb1h)
-            return 1;
-
-    /*check bottom left corner of bb2*/
-    if (bb1x <= bb2x && bb2x <= bb1x + bb1w)
-        if (bb1y <= bb2y + bb2h && bb2y + bb2h <= bb1y + bb1h)
-            return 1;
-
-    /*check bottom right corner of bb2*/
-    if (bb1x <= bb2x + bb2w && bb2x + bb2w <= bb1x + bb1w)
-        if (bb1y <= bb2y + bb2h && bb2y + bb2h <= bb1y + bb1h)
-            return 1;
-    return 0;
-}
-
-int bRand(int min, int max) {
-    int random = rand() % max;
-    if (random < min) {
-        random += min;
-    }
-    return random;
-}
-
-void blood(SDL_Rect bleed) {
+void blood(const SDL_Rect bleed) {
     /***********************************************************
      *causes blood to be placed on the screen
      *takes in teh sdl_rect to know where to place the blood
@@ -419,7 +323,6 @@ void blood(SDL_Rect bleed) {
     int x, y;
     x = bleed.x + bleed.w / 2;
     y = bleed.y + bleed.h / 2;
-    //printf("DEBUG: blood(%d, %d)\n", x, y);
     x += wrldps.x;
 
     addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0, bRand(4, 5));
@@ -427,9 +330,6 @@ void blood(SDL_Rect bleed) {
     addParticle(blood1, x, y, bRand(1, 4) *-1, -1 * bRand(2, 8), 1.0, bRand(4, 7));
     addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0, bRand(4, 8));
     addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(4, 12), 1.0, bRand(4, 9));
-
-
-    //SDL_BlitSurface(blood1, NULL, background, &bleed);
 }
 
 void rprint(int val) {

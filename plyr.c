@@ -13,6 +13,7 @@
 #include "nmy.h"
 #include "plyr.h"
 #include "image.h"
+#include "utils.h"
 
 void special() {
     /*************************************************

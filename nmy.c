@@ -12,6 +12,7 @@
 #include "nmy.h"
 #include "plyr.h"
 #include "particles.h"
+#include "utils.h"
 
 void killplayer(int i) {
     /**************************************

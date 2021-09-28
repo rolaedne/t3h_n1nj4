@@ -43,10 +43,7 @@ void blood(SDL_Rect bleed);
 void set_screen();
 void buildw();
 void world_mover();
-int twoblock_col(int bb1x, int bb1y, int bb1w, int bb1h,
-                  int bb2x, int bb2y, int bb2w, int bb2h);
-int isCollision(int x, int y);
-
+int isCollision(const int x, const int y);
 
 #ifdef __cplusplus
 }
