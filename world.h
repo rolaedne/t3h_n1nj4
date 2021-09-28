@@ -28,7 +28,6 @@ SDL_Surface *screen;
 SDL_Surface *background;
 SDL_Surface *foreground;
 SDL_Rect wrldps;
-SDL_Event event;
 int worldnum;
 int enemymax;
 

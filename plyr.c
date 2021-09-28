@@ -14,6 +14,7 @@
 #include "plyr.h"
 #include "image.h"
 #include "utils.h"
+#include "screens.h"
 
 void special() {
     /*************************************************
@@ -27,9 +28,8 @@ void special() {
         if(score < 0) { score = 0; }
         spdest.x = dest.x;
         spdest.y = dest.y + 15;
-        special_throw();
         attacklen = 25;
-        if (ninja_src.x >= 180) {
+        if (ninja_src.x >= 180) { // which direction is the ninja facing...
             sattack = 1;
         } else {
             sattack = 2;
@@ -39,6 +39,7 @@ void special() {
 
 #define SPECIAL_ATTACK_SPEED 25
 
+// TODO: Move this logic into an entity spawned by the the throw
 void special_throw() {
     /*************************************************
      *displays special weapon
@@ -49,17 +50,9 @@ void special_throw() {
         sattack = 0;
     }
 
-    if (sattack == 1) {
-        spdest.x += SPECIAL_ATTACK_SPEED;
-        spdest.y += 1;
-        attacklen--;
-        if ((attacklen % 5) == 0) {
-            SDL_BlitSurface(sweapon1_1, NULL, screen, &spdest);
-        } else {
-            SDL_BlitSurface(sweapon1_2, NULL, screen, &spdest);
-        }
-    } else if (sattack == 2) {
-        spdest.x -= SPECIAL_ATTACK_SPEED;
+    if (sattack == 1 || sattack == 2) { // attacking left (1) or right (2)
+        if (sattack == 1) spdest.x += SPECIAL_ATTACK_SPEED;
+        if (sattack == 2) spdest.x -= SPECIAL_ATTACK_SPEED;
         spdest.y += 1;
         attacklen--;
         if ((attacklen % 2) == 0) {
@@ -69,20 +62,6 @@ void special_throw() {
         }
     }
     killenemy();
-}
-
-void winner() {
-    printf("DEBUG: winner\n");
-    /******************************************
-     *will have the winning stuff
-     *******************************************/
-    SDL_Surface *winnerimg = loadImageAsSurface("lvl/winner.png");
-    SDL_BlitSurface(winnerimg, NULL, screen, NULL);
-    SDL_Flip(screen);
-    SDL_PumpEvents();
-    SDL_Delay(60 * 45);
-    SDL_FreeSurface(winnerimg);
-    winnerimg = NULL;
 }
 
 void physics() {
@@ -160,54 +139,6 @@ void physics() {
     }
 }
 
-void dead() {
-    /******************************
-     *will be dead charecter screen
-     *******************************/
-    deaths += 1;
-    SDL_Surface *death_screen;
-    BOOLEAN done = FALSE;
-
-    SDL_BlitSurface(blood1, NULL, screen, &dest);
-    SDL_Flip(screen);
-    SDL_Delay(1000);
-
-    death_screen = loadImageAsSurface("lvl/dead.png");
-    SDL_BlitSurface(death_screen, NULL, screen, NULL); /*print dead screen*/
-    SDL_Flip(screen);
-    SDL_FreeSurface(death_screen);
-    death_screen = NULL;
-
-
-    while (done == FALSE && SDL_WaitEvent(&event) != -1) {
-        switch (event.type) {
-            case SDL_QUIT: /*quits program*/
-                exit(0);
-                break;
-            case SDL_KEYUP:
-                switch (event.key.keysym.sym) {
-                    case SDLK_ESCAPE:
-                        exit(EXIT_SUCCESS);
-                        /*replace w/ an exitgame function */
-                        break;
-                    case SDLK_SPACE:
-                        done = TRUE;
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    score -= 10;
-    if (score < 0) score = 0;
-    sattack = 0;
-    attack = 0;
-    buildw();
-}
 
 void killenemy() {
     /*****************************

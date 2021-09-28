@@ -16,6 +16,7 @@
 #include "particles.h"
 #include "image.h"
 #include "utils.h"
+#include "screens.h"
 
 #define BRICKS_WORLD 5
 #define BRICKS_DAMAGE 5

@@ -33,12 +33,9 @@ int deaths;
 
 void jumping(int jump);
 void physics();
-void dead();
 void killenemy();
 void special();
 void special_throw();
-void winner();
-
 
 
 #ifdef __cplusplus

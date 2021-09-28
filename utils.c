@@ -43,3 +43,29 @@ int twoblock_col(
             return 1;
     return 0;
 }
+
+int delayMs(const unsigned int msToDelay) {
+    int msecs_waited = 0;
+    while(msecs_waited < msToDelay) {
+        msecs_waited += 10;
+        SDL_Delay(10);
+        if (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT:
+                    exit(EXIT_SUCCESS);
+                    break; /* unreachable, but here for clarity */
+                case SDL_KEYUP:
+                    if (event.key.keysym.sym == SDLK_SPACE) {
+                        return 1;
+                    }
+                    if (event.key.keysym.sym == SDLK_ESCAPE) {
+                        exit(EXIT_SUCCESS);
+                    }
+                    continue;
+                default:
+                    continue;
+            }
+        }
+    }
+    return 0;
+}

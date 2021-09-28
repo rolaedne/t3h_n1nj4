@@ -13,6 +13,7 @@
 #include "plyr.h"
 #include "particles.h"
 #include "utils.h"
+#include "screens.h"
 
 void killplayer(int i) {
     /**************************************
@@ -158,8 +159,7 @@ void enemyai() {
         enemyanimation(i);
 
         if (nmy[i].onscreen == 1 && nmy[i].nmy_alive == 1) {/*is the enemy on the screen*/
-            if ((nmy[i].dir[4] || nmy[i].dir[7])
-                    && nmy[i].jmpon == 0) {/*block on the left*/
+            if ((nmy[i].dir[4] || nmy[i].dir[7]) && nmy[i].jmpon == 0) {/*block on the left*/
                 nmy[i].enemy_gravity_compound = nmy[i].jmp;
                 nmy[i].jmpon = 1;
             }

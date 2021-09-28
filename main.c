@@ -9,14 +9,10 @@
 #include "particles.h"
 #include "image.h"
 #include "utils.h"
+#include "screens.h"
 
 #define DTIME 5
 #define MSECS_PER_FRAME 1000/60
-
-void startScreen();
-void playIntroMovie();
-void updateScreen();
-int delayMs(const unsigned int);
 
 int main(int argc, char **argv) {
     /*********************************************************
@@ -58,7 +54,7 @@ int main(int argc, char **argv) {
 
     set_screen();
     SDL_BlitSurface(ninja, &ninja_src, screen, &dest);
-    SDL_Flip(screen);
+    updateScreen();
     int skipLevel = 0;
 
     while (SDL_PollEvent(&event) != -1) {//main even loop
@@ -180,7 +176,7 @@ int main(int argc, char **argv) {
         letItSnow();
         drawParticles(screen);
         SDL_BlitSurface(foreground, &wrldps, screen, NULL);
-        SDL_Flip(screen);
+        updateScreen();
 
         delay = SDL_GetTicks() - ticks;
         if (delay >= MSECS_PER_FRAME) {
@@ -198,6 +194,7 @@ int main(int argc, char **argv) {
 }
 
 
+// Initial player welcome screen. If they don't press spacebar, we'll show them an intro movie too.
 void startScreen() {
     printf("DEBUG: startScreen\n");
 
@@ -207,18 +204,10 @@ void startScreen() {
     SDL_PumpEvents();
     updateScreen();
 
-    /* wait 6000 milliseconds for the user to press spacebar; if they
-     * don't, run the intro movie. */
-    const unsigned int max_wait_length = 3000;
-    unsigned int msecs_waited;
     while (TRUE) {
-        msecs_waited = 0;
-        while(msecs_waited < max_wait_length) {
-            msecs_waited += 10;
-            if (delayMs(10)) {
-                SDL_FreeSurface(start_screen_surface);
-                return;
-            }
+        if (delayMs(3000)) {
+            freeSurface(&start_screen_surface);
+            return;
         }
         playIntroMovie();
         SDL_BlitSurface(start_screen_surface, NULL, screen, NULL);
@@ -226,7 +215,10 @@ void startScreen() {
     }
 }
 
+
+// The best intro movie
 void playIntroMovie() {
+    printf("DEBUG: playIntroMovie()\n");
 
     /***************************
      *the intro movei that gets
@@ -239,7 +231,6 @@ void playIntroMovie() {
     SDL_Surface *backdrop, *bl, *grass, *black, *lightn, *ninjaborn,
             *rl, *red, *txt1, *txt2, *txt3, *txt4, *txt5, *txt6;
 
-    printf("DEBUG: playIntroMovie()\n");
 
     color = SDL_MapRGB(screen->format, 0, 0, 0);
 
@@ -275,7 +266,7 @@ void playIntroMovie() {
         }
         SDL_BlitSurface(rl, NULL, screen, &ndest);
         SDL_FillRect(screen, &bardest, color);
-        SDL_Flip(screen);
+        updateScreen();
         if (delayMs(30)) return;
     }
     SDL_FreeSurface(rl);
@@ -295,14 +286,14 @@ void playIntroMovie() {
         }
         SDL_BlitSurface(bl, NULL, screen, &ndest);
         SDL_FillRect(screen, &bardest, color);
-        SDL_Flip(screen);
+        updateScreen();
         if (delayMs(30)) return;
     }
     SDL_FreeSurface(bl);
 
     grass = loadImageAsSurface("intro_mov/grass.png");
     SDL_BlitSurface(grass, NULL, screen, NULL);
-    SDL_Flip(screen);
+    updateScreen();
     SDL_FreeSurface(grass);
     if (delayMs(60 * 2)) return;
 
@@ -314,7 +305,7 @@ void playIntroMovie() {
     ndest.x = SCREENWIDTH / 2;
     ndest.y = 0;
     SDL_BlitSurface(red, NULL, screen, &ndest);
-    SDL_Flip(screen);
+    updateScreen();
     SDL_FreeSurface(black);
     SDL_FreeSurface(red);
     if (delayMs(60 * 5)) return;
@@ -330,42 +321,42 @@ void playIntroMovie() {
     SDL_BlitSurface(backdrop, NULL, screen, NULL);
     txt1 = loadImageAsSurface("intro_mov/txt1.png");
     SDL_BlitSurface(txt1, NULL, screen, &ndest);
-    SDL_Flip(screen);
+    updateScreen();
     SDL_FreeSurface(txt1);
     if (delayMs(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
     txt2 = loadImageAsSurface("intro_mov/txt2.png");
     SDL_BlitSurface(txt2, NULL, screen, &ndest);
-    SDL_Flip(screen);
+    updateScreen();
     SDL_FreeSurface(txt2);
     if (delayMs(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
     txt3 = loadImageAsSurface("intro_mov/txt3.png");
     SDL_BlitSurface(txt3, NULL, screen, &ndest);
-    SDL_Flip(screen);
+    updateScreen();
     SDL_FreeSurface(txt3);
     if (delayMs(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
     txt4 = loadImageAsSurface("intro_mov/txt4.png");
     SDL_BlitSurface(txt4, NULL, screen, &ndest);
-    SDL_Flip(screen);
+    updateScreen();
     SDL_FreeSurface(txt4);
     if (delayMs(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
     txt5 = loadImageAsSurface("intro_mov/txt5.png");
     SDL_BlitSurface(txt5, NULL, screen, &ndest);
-    SDL_Flip(screen);
+    updateScreen();
     SDL_FreeSurface(txt5);
     if (delayMs(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
     txt6 = loadImageAsSurface("intro_mov/txt6.png");
     SDL_BlitSurface(txt6, NULL, screen, &ndest);
-    SDL_Flip(screen);
+    updateScreen();
     SDL_FreeSurface(txt6);
     if (delayMs(textDelayMs)) return;
     /*end text*/
@@ -374,7 +365,7 @@ void playIntroMovie() {
     SDL_FillRect(screen, NULL, color);
     SDL_BlitSurface(backdrop, NULL, screen, NULL);
     SDL_BlitSurface(ninjaborn, NULL, screen, NULL);
-    SDL_Flip(screen);
+    updateScreen();
     SDL_FreeSurface(backdrop);
     SDL_FreeSurface(ninjaborn);
     if (delayMs(60 * 30)) return;
@@ -382,28 +373,41 @@ void playIntroMovie() {
     /* free the memory we've used for the movie */
 }
 
-int delayMs(const unsigned int msToDelay) {
-    int msecs_waited = 0;
-    while(msecs_waited < msToDelay) {
-        msecs_waited += 10;
-        SDL_Delay(10);
-        if (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_QUIT:
-                    exit(EXIT_SUCCESS);
-                    break; /* unreachable, but here for clarity */
-                case SDL_KEYUP:
-                    if (event.key.keysym.sym == SDLK_SPACE) {
-                        return 1;
-                    }
-                    continue;
-                default:
-                    continue;
-            }
-        }
-    }
-    return 0;
+
+// Death screen
+void dead() {
+    printf("DEBUG: ya dead, boo.\n");
+    deaths += 1;
+    sattack = 0;
+    attack = 0;
+    score -= 10; if (score < 0) score = 0;
+
+    SDL_BlitSurface(blood1, NULL, screen, &dest);
+    updateScreen();
+    SDL_Delay(500); // Give the player a moment to see how they died
+
+    SDL_Surface *death_screen = loadImageAsSurface("lvl/dead.png");
+    SDL_BlitSurface(death_screen, NULL, screen, NULL); /*print dead screen*/
+    updateScreen();
+    freeSurface(&death_screen);
+
+    while (!delayMs(100));
+
+    buildw();
 }
+
+
+// Game over (as winner) screen
+void winner() {
+    printf("DEBUG: ya won, bro\n");
+    SDL_Surface *winnerimg = loadImageAsSurface("lvl/winner.png");
+    SDL_BlitSurface(winnerimg, NULL, screen, NULL);
+    updateScreen();
+    freeSurface(&winnerimg);
+
+    while(!delayMs(100));
+}
+
 
 void updateScreen() {
     SDL_Flip(screen);

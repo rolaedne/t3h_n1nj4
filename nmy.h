@@ -20,29 +20,28 @@ extern "C" {
 #define NMY_DEATHS 3
 #define NMY 10
 
-struct enemy
-  {
+struct enemy {
   /******************************************
   *defines all parts of the enemies
   *can we ever really define
   *what or whom an enemy is
   *what qualities really make up an enemy
   *******************************************/
-  SDL_Surface *enemies[6]; /*frames of animation*/
-  SDL_Surface *deaths[3]; /*death frames*/
-  SDL_Rect nmydest;
-  int nmy_deathtype;
-  int nmy_alive, enemy_gravity_compound;
-  int nmytype; /*type of enemy*/
-  int nmydly;/*a count var NMYDLY in nmy.c tells lenght of delay*/
-  int nmyani;/*what animation to use*/
-  int nmyanilen;/*how many animations*/
-  int dir[10];/*see below*/
-  int onscreen;/*if enemy is on screen*/
-  int jmpon;/*are they jumping/*/
-  int jmp;/*how high enemies jump*/
-  int speed;/*how fast an enemy moves*/
-  } nmy[NMY];
+    SDL_Surface *enemies[6]; /*frames of animation*/
+    SDL_Surface *deaths[3]; /*death frames*/
+    SDL_Rect nmydest;
+    int nmy_deathtype;
+    int nmy_alive, enemy_gravity_compound;
+    int nmytype; /*type of enemy*/
+    int nmydly;/*a count var NMYDLY in nmy.c tells lenght of delay*/
+    int nmyani;/*what animation to use*/
+    int nmyanilen;/*how many animations*/
+    int dir[10];/*see below*/
+    int onscreen;/*if enemy is on screen*/
+    int jmpon;/*are they jumping/*/
+    int jmp;/*how high enemies jump*/
+    int speed;/*how fast an enemy moves*/
+} nmy[NMY];
 
 /*********************
 *keeps track of last hit object in
@@ -59,8 +58,6 @@ void nmy_physics(int i);
 void nmy_spwn(int i);
 void enemyanimation(int i);
 void enemyai();
-
-
 
 #ifdef __cplusplus
 }

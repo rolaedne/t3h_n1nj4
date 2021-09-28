@@ -16,6 +16,10 @@ int twoblock_col(
     const int bb2x, const int bb2y, const int bb2w, const int bb2h
 );
 
+int delayMs(const unsigned int);
+
+SDL_Event event;
+
 #ifdef __cplusplus
 }
 #endif
