@@ -10,7 +10,7 @@
 #include "image.h"
 
 #define DTIME 5
-#define MSECS_PER_FRAME 1000/30
+#define MSECS_PER_FRAME 1000/60
 
 void startScreen();
 void playIntroMovie();
