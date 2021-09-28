@@ -195,7 +195,7 @@ void enemyai() {
             x = nmy[i].nmydest.x + nmy[i].nmydest.w / 2;
             y = nmy[i].nmydest.y + nmy[i].nmydest.h / 2;
             x += wrldps.x;
-            addParticle(blood1, x, y, 0, 0, 1.0);
+            addParticle(blood1, x, y, 0, 0, 1.0, 7);
         }
         for (t = 0; t < 10; t++) {/*rests their dir arrray*/
             nmy[i].dir[t] = 0;

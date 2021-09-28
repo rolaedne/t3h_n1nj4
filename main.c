@@ -214,7 +214,7 @@ void letItSnow(SDL_Surface *precipitation, int snowFrequency) {
         int x = rand() % (640 * 2) + wrldps.x;
         int y = 0;
         float weight = 0.2 + (rand() % 10 * 0.01);
-        addParticle(precipitation, x, y, (rand() % 4 + 1) * -1, rand() % 4 + 1, weight);
+        addParticle(precipitation, x, y, (rand() % 4 + 1) * -1, rand() % 4 + 1, weight, (rand() % 2 + 4));
     } while (++i < snowFrequency);
 }
 

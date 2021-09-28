@@ -12,7 +12,7 @@ int max_y_vel = 25;
 
 void applyParticlePhysics(Particle *p);
 
-void addParticle(SDL_Surface *image, int x, int y, int x_vel, int y_vel, float weight) {
+void addParticle(SDL_Surface *image, int x, int y, int x_vel, int y_vel, float weight, int size) {
     Particle *p = NULL;
     int i;
     for (i=0; i < MAX_PARTICLES; ++i) {
@@ -33,10 +33,11 @@ void addParticle(SDL_Surface *image, int x, int y, int x_vel, int y_vel, float w
     p->x_vel = x_vel;
     p->y_vel = y_vel;
     p->weight = weight;
+    p->size = size;
 }
 
 void drawParticle(SDL_Surface *screen, Particle *p) {
-    SDL_Rect src; src.x = 10; src.y = 10; src.w = 10; src.h = 10;
+    SDL_Rect src; src.x = p->size; src.y = p->size; src.w = p->size; src.h = p->size;
     SDL_Rect dest; dest.x = p->x - wrldps.x; dest.y = p->y;
     SDL_BlitSurface(p->image, &src, screen, &dest);
 }

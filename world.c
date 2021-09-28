@@ -422,11 +422,11 @@ void blood(SDL_Rect bleed) {
     //printf("DEBUG: blood(%d, %d)\n", x, y);
     x += wrldps.x;
 
-    addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0);
-    addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(6, 20), 1.0);
-    addParticle(blood1, x, y, bRand(1, 4) *-1, -1 * bRand(2, 8), 1.0);
-    addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0);
-    addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(4, 12), 1.0);
+    addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0, bRand(4, 5));
+    addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(6, 20), 1.0, bRand(4, 6));
+    addParticle(blood1, x, y, bRand(1, 4) *-1, -1 * bRand(2, 8), 1.0, bRand(4, 7));
+    addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0, bRand(4, 8));
+    addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(4, 12), 1.0, bRand(4, 9));
 
 
     //SDL_BlitSurface(blood1, NULL, background, &bleed);
