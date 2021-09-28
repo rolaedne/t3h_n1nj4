@@ -18,6 +18,7 @@ extern "C" {
 #define BYLAVA  2
 #define NMY_FRAMES 6
 #define NMY_DEATHS 3
+#define NMY 10
 
 struct enemy
   {

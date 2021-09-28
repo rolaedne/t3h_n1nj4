@@ -8,13 +8,13 @@
 #include "plyr.h"
 #include "particles.h"
 #include "image.h"
+#include "utils.h"
 
 #define DTIME 5
 #define MSECS_PER_FRAME 1000/60
 
 void startScreen();
 void playIntroMovie();
-void letItSnow();
 void updateScreen();
 int delayMs(const unsigned int);
 
@@ -177,12 +177,7 @@ int main(int argc, char **argv) {
         special_throw();
         enemyai();
         rprint(score);
-        if (worldnum == 0) {
-            letItSnow(snow, -2 + worldnum);
-            letItSnow(ash, -2 + worldnum);
-        } else {
-            letItSnow(snow, -3 + worldnum);
-        }
+        letItSnow();
         drawParticles(screen);
         SDL_BlitSurface(foreground, &wrldps, screen, NULL);
         SDL_Flip(screen);
@@ -203,37 +198,19 @@ int main(int argc, char **argv) {
 }
 
 
-void letItSnow(SDL_Surface *precipitation, int snowFrequency) {
-    static int snowLimiter = 0;
-    if (snowFrequency < 0) {
-        if (snowLimiter++ < 0) { return; }
-        snowLimiter = snowFrequency;
-    }
-    int i = 0;
-    do {
-        int x = rand() % (640 * 2) + wrldps.x;
-        int y = 0;
-        float weight = 0.2 + (rand() % 10 * 0.01);
-        addParticle(precipitation, x, y, (rand() % 4 + 1) * -1, rand() % 4 + 1, weight, (rand() % 2 + 4));
-    } while (++i < snowFrequency);
-}
-
 void startScreen() {
-    SDL_Surface *start_screen_surface;
-    unsigned int msecs_waited;
-    const unsigned int max_wait_length = 3000;
-
     printf("DEBUG: startScreen\n");
 
-    start_screen_surface = loadImageAsSurface("lvl/start_screen.png");
+    SDL_Surface *start_screen_surface = loadImageAsSurface("lvl/start_screen.png");
 
     SDL_BlitSurface(start_screen_surface, NULL, screen, NULL);
     SDL_PumpEvents();
     updateScreen();
 
-
     /* wait 6000 milliseconds for the user to press spacebar; if they
      * don't, run the intro movie. */
+    const unsigned int max_wait_length = 3000;
+    unsigned int msecs_waited;
     while (TRUE) {
         msecs_waited = 0;
         while(msecs_waited < max_wait_length) {

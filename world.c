@@ -17,6 +17,16 @@
 #include "image.h"
 #include "utils.h"
 
+#define BRICKS_WORLD 5
+#define BRICKS_DAMAGE 5
+
+SDL_Surface *dmgbrick[BRICKS_DAMAGE];
+int world_length;
+SDL_Surface *worldfloor, *worldbrick[BRICKS_WORLD];
+SDL_Surface *number, *wscore;
+SDL_Rect worlddest;
+SDL_Surface *snow;
+
 int isCollision(const int x, const int y) {
     const int row = y / BRICK_HEIGHT;
     if (row > WORLD_ROWS || row < 0) { return 1; }
@@ -35,7 +45,6 @@ void graphics_load() {
     number = loadImageAsSurface("lvl/number.png");
     blood1 = loadImageAsSurface("bloods/blood4.png");
     snow = loadImageAsSurface("bloods/snow.png");
-    ash = loadImageAsSurface("bloods/ash.png");
     sweapon1_1 = loadImageAsSurface("weapons/star1.png");
     sweapon1_2 = loadImageAsSurface("weapons/star2.png");
 
@@ -62,6 +71,7 @@ void graphics_free() {
     freeSurface(&wscore);
     freeSurface(&number);
     freeSurface(&blood1);
+    freeSurface(&snow);
     freeSurface(&sweapon1_1);
     freeSurface(&sweapon1_2);
     freeSurface(&ninja);
@@ -311,6 +321,17 @@ void world_mover() {
     } else if (dest.x < 0) {/*can't run off the left side*/
         dest.x = 0;
     }
+}
+
+
+void letItSnow() {
+    int i = 0;
+    do {
+        int x = rand() % (640 * 2) + wrldps.x;
+        int y = 0;
+        float weight = 0.2 + (rand() % 10 * 0.01);
+        addParticle(snow, x, y, (rand() % 4 + 1) * -1, rand() % 4 + 1, weight, bRand(3, 5));
+    } while (++i < worldnum);
 }
 
 

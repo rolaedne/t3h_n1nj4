@@ -4,7 +4,7 @@
 #include <SDL/SDL_video.h>
 
 //TODO: make this a collection
-#define MAX_PARTICLES 250
+#define MAX_PARTICLES 1024
 Particle particles[MAX_PARTICLES];
 
 int gravity_accumulator = 3;
@@ -12,7 +12,7 @@ int max_y_vel = 25;
 
 void applyParticlePhysics(Particle *p);
 
-void addParticle(SDL_Surface *image, int x, int y, int x_vel, int y_vel, float weight, int size) {
+void addParticle(SDL_Surface *image, const int x, const int y, const int x_vel, const int y_vel, const float weight, const int size) {
     Particle *p = NULL;
     int i;
     for (i=0; i < MAX_PARTICLES; ++i) {
@@ -25,8 +25,6 @@ void addParticle(SDL_Surface *image, int x, int y, int x_vel, int y_vel, float w
         printf("Could not find free particle slot\n");
         return;
     }
-    if (weight > 1.0) { weight = 1.0; };
-    if (weight < 0.0) { weight = 0.0; };
     p->image = image;
     p->x = x;
     p->y = y;

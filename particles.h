@@ -17,7 +17,7 @@ typedef struct Particle {
     SDL_Surface *image;
 } Particle;
 
-void addParticle(SDL_Surface *image, int x, int y, int x_vel, int y_vel, float weight, int size);
+void addParticle(SDL_Surface *image, const int x, const int y, const int x_vel, const int y_vel, const float weight, const int size);
 void drawParticles(SDL_Surface *screen);
 
 #ifdef __cplusplus
