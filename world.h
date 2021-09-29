@@ -27,13 +27,13 @@ int world[WORLD_ROWS][WORLD_COLS];
 SDL_Surface *screen;
 SDL_Surface *background;
 SDL_Surface *foreground;
+SDL_Surface *number, *wscore; // for score UI
 SDL_Rect wrldps;
 int worldnum;
 int enemymax;
 
 void graphics_load();
 void graphics_free();
-void rprint(int val);
 void letItSnow();
 void blood(SDL_Rect bleed);
 void set_screen();

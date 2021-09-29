@@ -24,7 +24,6 @@
 SDL_Surface *dmgbrick[BRICKS_DAMAGE];
 int world_length;
 SDL_Surface *worldfloor, *worldbrick[BRICKS_WORLD];
-SDL_Surface *number, *wscore;
 SDL_Rect worlddest;
 SDL_Surface *snow;
 
@@ -338,11 +337,6 @@ void letItSnow() {
 
 
 void blood(const SDL_Rect bleed) {
-    /***********************************************************
-     *causes blood to be placed on the screen
-     *takes in teh sdl_rect to know where to place the blood
-     *it takes into account the the lenght of the world
-     *************************************************************/
     int x, y;
     x = bleed.x + bleed.w / 2;
     y = bleed.y + bleed.h / 2;
@@ -353,53 +347,4 @@ void blood(const SDL_Rect bleed) {
     addParticle(blood1, x, y, bRand(1, 4) *-1, -1 * bRand(2, 8), 1.0, bRand(4, 7));
     addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0, bRand(4, 8));
     addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(4, 12), 1.0, bRand(4, 9));
-}
-
-void rprint(int val) {
-    /**************************************
-     *prints digit to the screen
-     *number is inited in fe.c
-     ***************************************/
-    SDL_Rect wdest, didest;
-
-    //printf("DEBUG: rprint(%d)\n", val);
-    didest.h = 13;
-    didest.y = 0;
-    didest.w = 10;
-    wdest.x = 110;
-    wdest.y = 0;
-
-    SDL_BlitSurface(wscore, NULL, screen, NULL);
-
-    if (val <= 0) {
-        didest.x = 0;
-        SDL_BlitSurface(number, &didest, screen, &wdest);
-    } else {
-        while (val > 0) {
-            if ((val % 10) == 0) {
-                didest.x = 0;
-            } else if ((val % 10) == 1) {
-                didest.x = 11;
-            } else if ((val % 10) == 2) {
-                didest.x = 22;
-            } else if ((val % 10) == 3) {
-                didest.x = 33;
-            } else if ((val % 10) == 4) {
-                didest.x = 44;
-            } else if ((val % 10) == 5) {
-                didest.x = 55;
-            } else if ((val % 10) == 6) {
-                didest.x = 66;
-            } else if ((val % 10) == 7) {
-                didest.x = 77;
-            } else if ((val % 10) == 8) {
-                didest.x = 88;
-            } else if ((val % 10) == 9) {
-                didest.x = 100;
-            }
-            SDL_BlitSurface(number, &didest, screen, &wdest);
-            val = val / 10;
-            wdest.x -= 10;
-        }
-    }
 }

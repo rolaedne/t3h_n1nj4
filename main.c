@@ -14,6 +14,8 @@
 #define DTIME 5
 #define MSECS_PER_FRAME 1000/60
 
+void score_ui();
+
 int main(int argc, char **argv) {
     /*********************************************************
      *Main
@@ -172,7 +174,7 @@ int main(int argc, char **argv) {
         SDL_BlitSurface(ninja, &ninja_src, screen, &dest);
         special_throw();
         enemyai();
-        rprint(score);
+        score_ui();
         letItSnow();
         drawParticles(screen);
         SDL_BlitSurface(foreground, &wrldps, screen, NULL);
@@ -193,6 +195,27 @@ int main(int argc, char **argv) {
     return 8008135;
 }
 
+int get_length(int val) {
+    int val_length = 0;
+    do { val_length++; } while ((val /= 10) > 0);
+    return val_length;
+}
+
+void score_ui() {
+    SDL_Rect score_dest = { 10, 10 };
+    SDL_BlitSurface(wscore, NULL, screen, &score_dest);
+
+    int val = score;
+    if (val <= 0) { val = 0; }
+
+    SDL_Rect wdest = { score_dest.x + wscore->w + 10 + (10 * get_length(val)), score_dest.y };
+    SDL_Rect didest = { 0, 0, 10, 13 };
+    do {
+        didest.x = (val % 10) * 11;
+        SDL_BlitSurface(number, &didest, screen, &wdest);
+        wdest.x -= 10;
+    } while ((val /= 10) > 0);
+}
 
 // Initial player welcome screen. If they don't press spacebar, we'll show them an intro movie too.
 void startScreen() {
@@ -416,7 +439,7 @@ void dead() {
         special_throw();
         physics();
         enemyai();
-        rprint(score);
+        score_ui();
         letItSnow();
         drawParticles(screen);
         updateScreen();
