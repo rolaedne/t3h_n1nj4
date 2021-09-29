@@ -36,19 +36,19 @@ void nmy_spwn(int i) {
      *only when really on screen.
      ***********************************/
     if ((nmy[i].nmydest.x - wrldps.x) < SCREENWIDTH && nmy[i].nmydest.x > 0) {/*if enemy is alive draw him on screen*/
-        if (nmy[i].nmy_alive == 1) {
+        if (nmy[i].nmy_alive) {
             nmy[i].onscreen = 1;
-            SDL_BlitSurface(nmy[i].enemies[nmy[i].nmyani],
-                    NULL, screen, &nmy[i].nmydest);
+            SDL_BlitSurface(nmy[i].enemies[nmy[i].nmyani], NULL, screen, &nmy[i].nmydest);
         } else {
             if (nmy[i].nmytype == 0) {
                 nmy[i].onscreen = 1;
-                if (nmy[i].nmy_death_counter > 0 && (nmy[i].nmy_deathtype == BYSWORD ||  nmy[i].nmy_deathtype == BYSTAR)) {
-                    blood(nmy[i].nmydest);
-                    nmy[i].nmy_death_counter--;
+                if (nmy[i].nmy_deathtype == BYSWORD || nmy[i].nmy_deathtype == BYSTAR) {
+                    if (nmy[i].nmy_death_counter > 0 || rand() % 75 == 0) {
+                        blood(nmy[i].nmydest);
+                        nmy[i].nmy_death_counter--;
+                    }
                 }
-                SDL_BlitSurface(nmy[i].deaths[nmy[i].nmy_deathtype],
-                        NULL, screen, &nmy[i].nmydest);
+                SDL_BlitSurface(nmy[i].deaths[nmy[i].nmy_deathtype], NULL, screen, &nmy[i].nmydest);
             }
         }
     }
