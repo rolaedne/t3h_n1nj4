@@ -14,8 +14,7 @@ void applyParticlePhysics(Particle *p);
 
 void addParticle(SDL_Surface *image, const int x, const int y, const int x_vel, const int y_vel, const float weight, const int size) {
     Particle *p = NULL;
-    int i;
-    for (i=0; i < MAX_PARTICLES; ++i) {
+    for (int i=0; i < MAX_PARTICLES; ++i) {
         if (particles[i].image == NULL) {
             p = &particles[i];
             break;
@@ -48,8 +47,7 @@ void persistToBackground(Particle *p) {
 
 void drawParticles(SDL_Surface *screen) {
     Particle *p = NULL;
-    int i;
-    for (i=0; i < MAX_PARTICLES; ++i) {
+    for (int i=0; i < MAX_PARTICLES; ++i) {
         if (particles[i].image != NULL) {
             p = &particles[i];
             applyParticlePhysics(p);
@@ -69,4 +67,8 @@ void applyParticlePhysics(Particle *p) {
     p->y += p->y_vel;
     p->y_vel += (gravity_accumulator * p->weight);
     p->x += p->x_vel;
+}
+
+void clearParticles() {
+    for (int i=0; i < MAX_PARTICLES; ++i) { particles[i].image = NULL; }
 }

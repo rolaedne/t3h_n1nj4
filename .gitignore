@@ -5,3 +5,4 @@ teh_ninja
 .project
 .settings/
 .vscode/
+test.c

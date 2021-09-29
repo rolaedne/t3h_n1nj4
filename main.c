@@ -380,19 +380,47 @@ void dead() {
     deaths += 1;
     sattack = 0;
     attack = 0;
+    isDead = TRUE;
     score -= 10; if (score < 0) score = 0;
 
-    SDL_BlitSurface(blood1, NULL, screen, &dest);
-    updateScreen();
-    SDL_Delay(500); // Give the player a moment to see how they died
+    SDL_Rect bloodSpawn;
+    bloodSpawn.x = dest.x;
+    bloodSpawn.y = dest.y;
+    bloodSpawn.w = dest.w;
+    bloodSpawn.h = dest.h;
+    blood(bloodSpawn);
+
+    BOOLEAN done = FALSE;
+    int delayWait = 750; // Give the player a moment to see how they died
+    while (!delayMsNoSkip(MSECS_PER_FRAME) && delayWait > 0) {
+        SDL_BlitSurface(background, &wrldps, screen, NULL);
+        SDL_BlitSurface(ninja, &ninja_src, screen, &dest);
+        const int old_x = bloodSpawn.x;
+        bloodSpawn.y -= 1;
+        blood(bloodSpawn);
+        bloodSpawn.x = old_x - bRand(10, 25);
+        blood(bloodSpawn);
+        bloodSpawn.x = old_x + bRand(10, 25);
+        blood(bloodSpawn);
+        bloodSpawn.x = old_x;
+        enemyai();
+        rprint(score);
+        letItSnow();
+        drawParticles(screen);
+        updateScreen();
+
+        delayWait -= MSECS_PER_FRAME;
+    }
+
+    printf("DEBUG: done looking\n");
 
     SDL_Surface *death_screen = loadImageAsSurface("lvl/dead.png");
     SDL_BlitSurface(death_screen, NULL, screen, NULL); /*print dead screen*/
     updateScreen();
     freeSurface(&death_screen);
 
+    isDead = FALSE;
     while (!delayMs(100));
-
     buildw();
 }
 

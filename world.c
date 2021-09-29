@@ -105,6 +105,7 @@ void buildw() {
         for(x = 0; x < NMY_FRAMES; ++x) freeSurface(&nmy[i].enemies[x]);
         for(x = 0; x < NMY_DEATHS; ++x) freeSurface(&nmy[i].deaths[x]);
     }
+    clearParticles();
 
     /********************************************
      *world stuff needed to make world

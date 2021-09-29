@@ -31,6 +31,7 @@ struct enemy {
     SDL_Surface *deaths[3]; /*death frames*/
     SDL_Rect nmydest;
     int nmy_deathtype;
+    int nmy_death_counter;
     int nmy_alive, enemy_gravity_compound;
     int nmytype; /*type of enemy*/
     int nmydly;/*a count var NMYDLY in nmy.c tells lenght of delay*/

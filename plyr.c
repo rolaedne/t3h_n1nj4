@@ -105,7 +105,7 @@ void physics() {
 
 // Checks for attack (sword) and special attack (star) kills
 void killenemy() {
-    if (!attack && !sattack) { return; } // not attacking or special attacking, so no chance to kill
+    if (isDead || (!attack && !sattack)) { return; } // not attacking or special attacking, so no chance to kill
 
     // adjust sword attack box based on the direction the player is facing
     const bbox attackBox = { dest.x + (ninja_src.x >= 180 ? 45 : 0), dest.y + 25, 20, 30 };
@@ -118,16 +118,16 @@ void killenemy() {
 
         if (attack && bbox_col(enemyBox, attackBox)) { // Sword attack
             nmy[i].nmy_alive = 0;
-            blood(nmy[i].nmydest);
             score += 10;
             nmy[i].nmy_deathtype = BYSWORD;
+            nmy[i].nmy_death_counter = 25; // how bloody is the death?
         } else if (sattack && bbox_col(enemyBox, sattackBox)) { // Star attack
             nmy[i].nmy_alive = 0;
             nmy[i].nmy_deathtype = BYSTAR;
-            blood(nmy[i].nmydest);
+            nmy[i].nmy_death_counter = 10; // how bloody is the death?
+            score += 5; // small refund for star kills
             sattack = 0;
-            // no more stars, and no sword out, don't bother checking anything else
-            if (!attack) { return; }
+            if (!attack) { return; } // no more stars, and no sword out, don't bother checking anything else
         }
     }
 }

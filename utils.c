@@ -51,6 +51,14 @@ int twoblock_col(
     return 0;
 }
 
+BOOLEAN skippable = TRUE;
+int delayMsNoSkip(const unsigned int msToDelay) {
+    skippable = FALSE;
+    const int result = delayMs(msToDelay);
+    skippable = TRUE;
+    return result;
+}
+
 int delayMs(const unsigned int msToDelay) {
     int msecs_waited = 0;
     while(msecs_waited < msToDelay) {
@@ -62,6 +70,7 @@ int delayMs(const unsigned int msToDelay) {
                     exit(EXIT_SUCCESS);
                     break; /* unreachable, but here for clarity */
                 case SDL_KEYUP:
+                    if (!skippable) { continue; }
                     if (event.key.keysym.sym == SDLK_SPACE) {
                         return 1;
                     }

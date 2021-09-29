@@ -16,11 +16,6 @@ extern "C" {
 #define ATTLEN 20
 
 
-typedef enum {
-    FALSE = 0, TRUE = 1
-} BOOLEAN;
-
-
 SDL_Rect dest, spdest;
 SDL_Surface *ninja;
 SDL_Surface *blood1;
@@ -36,6 +31,7 @@ int gravity_compound;
 int jump, attack, sattack, attacklen;
 int score;
 int deaths;
+int isDead;
 
 void jumping(int jump);
 void physics();

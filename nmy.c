@@ -16,6 +16,7 @@
 #include "screens.h"
 
 void killplayer(int i) {
+    if (isDead) { return; } // don't kill the player if they're already dead
     /**************************************
      *Takes care of case if enemy hands touch
      *ninja. you will make with the dead.
@@ -42,6 +43,10 @@ void nmy_spwn(int i) {
         } else {
             if (nmy[i].nmytype == 0) {
                 nmy[i].onscreen = 1;
+                if (nmy[i].nmy_death_counter > 0 && (nmy[i].nmy_deathtype == BYSWORD ||  nmy[i].nmy_deathtype == BYSTAR)) {
+                    blood(nmy[i].nmydest);
+                    nmy[i].nmy_death_counter--;
+                }
                 SDL_BlitSurface(nmy[i].deaths[nmy[i].nmy_deathtype],
                         NULL, screen, &nmy[i].nmydest);
             }
