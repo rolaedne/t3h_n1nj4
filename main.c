@@ -379,7 +379,6 @@ void dead() {
     if (isDead) { return; }
     printf("DEBUG: ya dead, boo.\n");
     deaths += 1;
-    sattack = 0;
     attack = 0;
     isDead = TRUE;
     score -= 10; if (score < 0) score = 0;
@@ -414,6 +413,7 @@ void dead() {
         bloodSpawn.x = old_x + bRand(10, 25);
         blood(bloodSpawn);
         bloodSpawn.x = old_x;
+        special_throw();
         physics();
         enemyai();
         rprint(score);
@@ -431,6 +431,7 @@ void dead() {
     updateScreen();
     freeSurface(&death_screen);
 
+    sattack = 0;
     isDead = FALSE;
     while (!delayMs(100));
     buildw();
