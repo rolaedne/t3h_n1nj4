@@ -34,7 +34,7 @@ int isCollision(const int x, const int y) {
     const int col = x / BRICK_WIDTH;
     if (col > WORLD_COLS || col < 0) { return 1; }
     //printf("BRICK: %dx%d\n", row, col);
-    return world[row][col] > 0;
+    return world[row][col];
 }
 
 void graphics_load() {
@@ -57,9 +57,9 @@ void graphics_load() {
     worldbrick[1] = loadImageAsSurface("lvl/brick1.png");
     worldbrick[2] = loadImageAsSurface("lvl/brick2.png");
     worldbrick[3] = loadImageAsSurface("lvl/brick3.png");
-    dmgbrick[0] = loadImageAsSurface("lvl/dbrick0.png");
-    dmgbrick[1] = loadImageAsSurface("lvl/dbrick1.png");
-    dmgbrick[2] = loadImageAsSurface("lvl/dbrick2.png");
+    dmgbrick[0] = loadImageAsSurface("lvl/dbrick0.png"); // tile 6: left facing spikes
+    dmgbrick[1] = loadImageAsSurface("lvl/dbrick1.png"); // tile 7: up facing lava
+    dmgbrick[2] = loadImageAsSurface("lvl/dbrick2.png"); // tile 8: right facing spikes
 }
 
 

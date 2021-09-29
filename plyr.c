@@ -24,8 +24,7 @@ void special() {
      **************************************************/
 
     if (sattack == 0 && score >= 5) {
-        score -= 10;
-        if(score < 0) { score = 0; }
+        score -= 10; if(score < 0) { score = 0; }
         spdest.x = dest.x;
         spdest.y = dest.y + 15;
         attacklen = 25;
@@ -48,18 +47,14 @@ void special_throw() {
      *************************************************/
     if (attacklen == 0) {
         sattack = 0;
+        return;
     }
 
     if (sattack == 1 || sattack == 2) { // attacking left (1) or right (2)
         if (sattack == 1) spdest.x += SPECIAL_ATTACK_SPEED;
         if (sattack == 2) spdest.x -= SPECIAL_ATTACK_SPEED;
         spdest.y += 1;
-        attacklen--;
-        if ((attacklen % 2) == 0) {
-            SDL_BlitSurface(sweapon1_1, NULL, screen, &spdest);
-        } else {
-            SDL_BlitSurface(sweapon1_2, NULL, screen, &spdest);
-        }
+        SDL_BlitSurface((--attacklen % 2) ? sweapon1_1 : sweapon1_2, NULL, screen, &spdest);
     }
     killenemy();
 }
@@ -70,71 +65,40 @@ void physics() {
      *will not allow the ninja to go into boxes
      *will cause the ninja to fall if in the air
      *************************************************/
-    int tmp;
-    if (dest.y > SCREENHEIGHT) {
-        blood(dest);
-        dead();
-    }
+    if (dest.y > SCREENHEIGHT) {  dead(); return; } // Death by falling off the bottom of the screen
+
     /*checks in air collision left && right */
-    dest.y += GRAVITY + gravity_compound;
+    // apply gravity
     gravity_compound += GRAVITY;
-    if(gravity_compound > 15) gravity_compound = 15;
-    if(gravity_compound < JUMPMAX) gravity_compound = JUMPMAX;
+    if (gravity_compound > 15) { gravity_compound = 15; }
+    if (gravity_compound < JUMPMAX) { gravity_compound = JUMPMAX; }
+    dest.y += gravity_compound;
 
-    if (world[(dest.y + BRICK_HEIGHT) / BRICK_HEIGHT][(dest.x + wrldps.x + 30) / BRICK_WIDTH] == 7) {
-        blood(dest);
-        dead();
+    // convert ninja position from screen position to world position
+    const int ninja_world_x = dest.x + wrldps.x;
+
+    int testY = dest.y + BRICK_HEIGHT - GRAVITY;
+    int testX = ninja_world_x + BRICK_WIDTH - 10;
+    int collision_type;
+
+    if ((collision_type = isCollision(ninja_world_x + 10, testY)) || (collision_type = isCollision(testX, testY))) {
+        if (collision_type == 7) { dead(); return; } // Tile 7 = up facing lava
+        dest.y = (testY / BRICK_HEIGHT - 1) * BRICK_HEIGHT;
+        jump = 0; gravity_compound = 0;
+        ninja_src.y = 80; // set frame to on the ground
+    } else if (isCollision(testX, dest.y) || isCollision(ninja_world_x, dest.y)) {/*will check bootom*/
+        dest.y = (testY / BRICK_HEIGHT) * BRICK_HEIGHT;
+        gravity_compound = 0;
     }
 
-    if (world[(dest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT][(dest.x + 10 + wrldps.x) / BRICK_WIDTH] > 0
-            && world[(dest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT][(dest.x + 10 + wrldps.x) / BRICK_WIDTH] != 7) {//check fall left side
-        tmp = (((dest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
-        tmp *= BRICK_HEIGHT;
-        gravity_compound = 0;
-        dest.y = tmp;
-        jump = 0;
-        ninja_src.y = 80;
-    } else if (world[(dest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT]
-            [(dest.x + BRICK_WIDTH - 10 + wrldps.x) / BRICK_WIDTH] > 0 &&
-            world[(dest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT][(dest.x + BRICK_WIDTH - 10 + wrldps.x) / BRICK_WIDTH] != 7) {//check fall right side
-        tmp = (((dest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
-        tmp *= BRICK_HEIGHT;
-        gravity_compound = 0;
-        dest.y = tmp;
-        jump = 0;
-        ninja_src.y = 80;
-    } else if (world[(dest.y) / BRICK_HEIGHT][(dest.x + BRICK_WIDTH - 10 + wrldps.x) / BRICK_WIDTH] > 0) {/*will check bootom*/
-        tmp = (((dest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
-        tmp *= BRICK_HEIGHT;
-        gravity_compound = 0;
-        dest.y = tmp + BRICK_HEIGHT;
-    } else if (world[(dest.y) / BRICK_HEIGHT][(dest.x + wrldps.x) / BRICK_WIDTH] > 0) {/*will check bootom pther side*/
-        tmp = (((dest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
-        tmp *= BRICK_HEIGHT;
-        gravity_compound = 0;
-        dest.y = tmp + BRICK_HEIGHT;
-    }
+    testX = ninja_world_x + BRICK_WIDTH - 5;
+    testY = dest.y + BRICK_HEIGHT - 10;
 
-    /*checks on ground left && right */
-    if (world[dest.y / BRICK_HEIGHT][(dest.x + BRICK_WIDTH - 5 + wrldps.x) / BRICK_WIDTH] > 0) {
-        if (world[dest.y / BRICK_HEIGHT][(dest.x + BRICK_WIDTH - 5 + wrldps.x) / BRICK_WIDTH] == 6) {
-            dead();
-        }
+    if ((collision_type = isCollision(testX, dest.y)) || (collision_type = isCollision(testX, testY))) {
+        if (collision_type == 6) { dead(); return; } // Tile 6 = left facing spikes
         dest.x -= MOVERL;
-    } else if (world[dest.y / BRICK_HEIGHT][(dest.x + wrldps.x) / BRICK_WIDTH] > 0) {
-        if (world[dest.y / BRICK_HEIGHT][(dest.x + wrldps.x) / BRICK_WIDTH] == 8) {
-            dead();
-        }
-        dest.x += MOVERL;
-    } else if (world[(dest.y + 70) / BRICK_HEIGHT][(dest.x + BRICK_WIDTH - 5 + wrldps.x) / BRICK_WIDTH] > 0) {
-        if (world[(dest.y + 70) / BRICK_HEIGHT][(dest.x + BRICK_WIDTH - 5 + wrldps.x) / BRICK_WIDTH] == 6) {
-            dead();
-        }
-        dest.x -= MOVERL;
-    } else if (world[(dest.y + 70) / BRICK_HEIGHT][(dest.x + wrldps.x) / BRICK_WIDTH] > 0) {
-        if (world[(dest.y + 70) / BRICK_HEIGHT][(dest.x + wrldps.x) / BRICK_WIDTH] == 8) {
-            dead();
-        }
+    } else if ((collision_type = isCollision(ninja_world_x, dest.y)) || (collision_type = isCollision(ninja_world_x, testY))) {
+        if (collision_type == 8) {  dead(); return; } // Tile 8 = right facing spikes
         dest.x += MOVERL;
     }
 }
