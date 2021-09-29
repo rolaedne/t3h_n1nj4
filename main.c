@@ -391,13 +391,23 @@ void dead() {
     bloodSpawn.h = dest.h;
     blood(bloodSpawn);
 
+    int vertical_accumulator = 0;
+
     BOOLEAN done = FALSE;
     int delayWait = 750; // Give the player a moment to see how they died
     while (!delayMsNoSkip(MSECS_PER_FRAME) && delayWait > 0) {
+        ninja_src.y = 0;
+        if (ninja_src.x < 180) {
+            ninja_src.x = 0;
+        } else {
+            ninja_src.x = 300;
+        }
         SDL_BlitSurface(background, &wrldps, screen, NULL);
         SDL_BlitSurface(ninja, &ninja_src, screen, &dest);
+        bloodSpawn.x = dest.x;
+        bloodSpawn.y = dest.y;
         const int old_x = bloodSpawn.x;
-        bloodSpawn.y -= 1;
+        bloodSpawn.y -= vertical_accumulator++;
         blood(bloodSpawn);
         bloodSpawn.x = old_x - bRand(10, 25);
         blood(bloodSpawn);
