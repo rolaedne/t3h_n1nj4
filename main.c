@@ -376,6 +376,7 @@ void playIntroMovie() {
 
 // Death screen
 void dead() {
+    if (isDead) { return; }
     printf("DEBUG: ya dead, boo.\n");
     deaths += 1;
     sattack = 0;
@@ -403,6 +404,7 @@ void dead() {
         bloodSpawn.x = old_x + bRand(10, 25);
         blood(bloodSpawn);
         bloodSpawn.x = old_x;
+        physics();
         enemyai();
         rprint(score);
         letItSnow();
