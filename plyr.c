@@ -139,44 +139,31 @@ void physics() {
     }
 }
 
-
+// Checks for attack (sword) and special attack (star) kills
 void killenemy() {
-    /*****************************
-     *kills enemy if hit by weapon
-     *****************************/
-    int i;
-    for (i = 0; i < enemymax; i++) {/*checks for each enemy*/
-        if (nmy[i].nmy_alive == 0) continue; /*don't recheck the dead*/
-        if (attack != 0) {/*checks for if in attack mode*/
-            if (ninja_src.x >= 180) {/*setting destionat of sword in image with first 4 vals*/
-                if (twoblock_col(nmy[i].nmydest.x, nmy[i].nmydest.y, 60, 80,
-                        dest.x + 45, dest.y + 25, 20, 30)
-                        == 1 && nmy[i].nmy_alive != 0) {
-                    nmy[i].nmy_alive = 0;
-                    blood(nmy[i].nmydest);
-                    score += 10;
-                }
-            } else {/*setting destionation of sword in image with first 4 vals*/
-                if (twoblock_col(nmy[i].nmydest.x, nmy[i].nmydest.y, 60, 80,
-                        dest.x, dest.y + 25, 20, 30)
-                        == 1 && nmy[i].nmy_alive != 0) {
-                    nmy[i].nmy_alive = 0;
-                    blood(nmy[i].nmydest);
-                    score += 10;
-                }
-            }
-            if (nmy[i].nmy_alive == 0) {
-                nmy[i].nmy_deathtype = BYSWORD;
-            }
-        }
-        if (sattack != 0 &&
-                /*special attack (star)*/
-                twoblock_col(nmy[i].nmydest.x, nmy[i].nmydest.y, 60, 80,
-                spdest.x, spdest.y, 30, 33) == 1 && nmy[i].nmy_alive != 0) {/*special weapon attacks*/
+    if (!attack && !sattack) { return; } // not attacking or special attacking, so no chance to kill
+
+    // adjust sword attack box based on the direction the player is facing
+    const bbox attackBox = { dest.x + (ninja_src.x >= 180 ? 45 : 0), dest.y + 25, 20, 30 };
+    const bbox sattackBox = { spdest.x, spdest.y, 30, 33 };
+
+    for (int i = 0; i < enemymax; i++) {/*checks for each enemy*/
+        if (nmy[i].nmy_alive == 0) { continue; } /*don't recheck the dead*/
+
+        const bbox enemyBox = { nmy[i].nmydest.x, nmy[i].nmydest.y, 60, 80 };
+
+        if (attack && bbox_col(enemyBox, attackBox)) { // Sword attack
+            nmy[i].nmy_alive = 0;
+            blood(nmy[i].nmydest);
+            score += 10;
+            nmy[i].nmy_deathtype = BYSWORD;
+        } else if (sattack && bbox_col(enemyBox, sattackBox)) { // Star attack
             nmy[i].nmy_alive = 0;
             nmy[i].nmy_deathtype = BYSTAR;
             blood(nmy[i].nmydest);
             sattack = 0;
+            // no more stars, and no sword out, don't bother checking anything else
+            if (!attack) { return; }
         }
     }
 }

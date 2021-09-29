@@ -18,6 +18,15 @@ int twoblock_col(
 
 int delayMs(const unsigned int);
 
+typedef struct {
+    int x;
+    int y;
+    int w;
+    int h;
+} bbox;
+
+int bbox_col(bbox box1, bbox box2);
+
 SDL_Event event;
 
 #ifdef __cplusplus
