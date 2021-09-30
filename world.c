@@ -178,7 +178,7 @@ void load_current_world_from_file() {
             /*death image, sword,*/
             enemies[i].death_frames[BYSWORD] = load_image_as_rgba("chars/turco2.png");
             enemies[i].death_frames[BYSTAR] = load_image_as_rgba("chars/turco3.png");
-            enemies[i].death_frames[BYLAVA] = load_image_as_rgba("chars/turco4.png");
+            enemies[i].death_frames[BYLAVA] = load_image_as_rgba("chars/ashes.png");
 
             enemies[i].jump_strength = -40;
             enemies[i].speed = 4;
@@ -187,6 +187,9 @@ void load_current_world_from_file() {
             enemies[i].anim_frames[1] = load_image_as_rgba("chars/one1.png");
             enemies[i].anim_frames[2] = load_image_as_rgba("chars/one2.png");
             enemies[i].anim_frames[3] = load_image_as_rgba("chars/one3.png");
+            enemies[i].death_frames[BYSWORD] = load_image_as_rgba("chars/one_sword_death.png");
+            enemies[i].death_frames[BYSTAR] = load_image_as_rgba("chars/one_star_death.png");
+            enemies[i].death_frames[BYLAVA] = load_image_as_rgba("chars/ashes.png");
 
             enemies[i].jump_strength = -45;
             enemies[i].speed = 5;
@@ -197,6 +200,9 @@ void load_current_world_from_file() {
             enemies[i].anim_frames[3] = load_image_as_rgba("chars/rninja3.png");
             enemies[i].anim_frames[4] = load_image_as_rgba("chars/rninja4.png");
             enemies[i].anim_frames[5] = load_image_as_rgba("chars/rninja5.png");
+            enemies[i].death_frames[BYSWORD] = load_image_as_rgba("chars/rninja_sword_death.png");
+            enemies[i].death_frames[BYSTAR] = load_image_as_rgba("chars/rninja_star_death.png");
+            enemies[i].death_frames[BYLAVA] = load_image_as_rgba("chars/ashes.png");
 
             enemies[i].jump_strength = -55;
             enemies[i].speed = 8;
