@@ -448,6 +448,7 @@ void dead() {
     SDL_Surface *death_screen = load_image_as_rgba("lvl/dead.png");
     SDL_BlitSurface(death_screen, NULL, screen, NULL); /*print dead screen*/
     SDL_BlitSurface(ninja, &corpse_src, screen, &corpse_dest);
+    draw_score_ui();
     update_screen();
     free_surface(&death_screen);
 
@@ -463,6 +464,7 @@ void show_victory_screen() {
     printf("DEBUG: ya won, bro\n");
     SDL_Surface *winnerimg = load_image_as_rgba("lvl/winner.png");
     SDL_BlitSurface(winnerimg, NULL, screen, NULL);
+    draw_score_ui();
     update_screen();
     free_surface(&winnerimg);
 
