@@ -20,49 +20,44 @@ extern "C" {
 #define NMY_DEATHS 3
 #define NMY 10
 
+/******************************************
+ * defines all parts of the enemies
+ * can we ever really define what or whom an enemy is
+ * what qualities really make up an enemy
+*******************************************/
 typedef struct {
-  /******************************************
-  *defines all parts of the enemies
-  *can we ever really define
-  *what or whom an enemy is
-  *what qualities really make up an enemy
-  *******************************************/
-    SDL_Surface *enemies[NMY_FRAMES]; /*frames of animation*/
-    SDL_Surface *enemies_flipped[NMY_FRAMES]; /*frames of animation*/
-    SDL_Surface *deaths[NMY_DEATHS]; /*death frames*/
-    SDL_Surface *deaths_flipped[NMY_DEATHS]; /*death frames*/
-    SDL_Rect nmydest;
-    int nmy_deathtype;
-    int nmy_death_counter;
-    int nmy_alive, enemy_gravity_compound;
-    int nmytype; /*type of enemy*/
-    int nmydly;/*a count var NMYDLY in nmy.c tells lenght of delay*/
-    int nmyani;/*what animation to use*/
-    int nmyanilen;/*how many animations*/
-    int dir[10];/*see below*/
-    int onscreen;/*if enemy is on screen*/
-    int jmpon;/*are they jumping/*/
-    int jmp;/*how high enemies jump*/
-    int speed;/*how fast an enemy moves*/
-    int flipped;
+    SDL_Surface *anim_frames[NMY_FRAMES]; // frames of animation
+    SDL_Surface *anim_frames_flipped[NMY_FRAMES]; // frames of animation, flipped horizontally
+    SDL_Surface *death_frames[NMY_DEATHS]; // death frames
+    SDL_Surface *death_frames_flipped[NMY_DEATHS]; // death frames, flipped horizontally
+    SDL_Rect dest; // Abused to track enemy location
+    int death_type;
+    int death_bleed_counter;
+    int is_alive;
+    int is_visible; /*if enemy is on screen*/
+    int is_flipped;
+    int gravity_compound;
+    int type; /*type of enemy*/
+    int anim_delay;/*a count var NMYDLY in nmy.c tells lenght of delay*/
+    int anim_frame;/*what animation to use*/
+    /*********************
+    * keeps track of last hit object in world. used mainly for ai to handle direction and jumping.
+    * 5 would be in that air everything else would be around enemy.
+    * 789
+    * 456
+    * 123
+    *******************/
+    int dir[10]; //see above
+    int jump_is_active; // are they jumping
+    int jump_strength; // how high enemies jump
+    int speed; // how fast an enemy moves
 } enemy;
 
-enemy nmy[NMY];
+enemy enemies[NMY];
 
-/*********************
-*keeps track of last hit object in
-*world. used mainly for ai to handle direction
-*and jumping. 5 would be in that air everything
-*else would be around enemy.
-*789
-*456
-*123
-*******************/
-
-void killplayer(int i);
-void nmy_physics(int i);
-void enemyanimation(int i);
-void enemyai();
+void check_player_collision(enemy *e);
+void enemy_physics(enemy *e);
+void enemy_ai();
 
 #ifdef __cplusplus
 }

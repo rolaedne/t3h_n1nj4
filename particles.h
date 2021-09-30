@@ -7,7 +7,7 @@ extern "C" {
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 
-typedef struct Particle {
+typedef struct {
     int x;
     int y;
     int x_vel;
@@ -17,9 +17,9 @@ typedef struct Particle {
     SDL_Surface *image;
 } Particle;
 
-void addParticle(SDL_Surface *image, const int x, const int y, const int x_vel, const int y_vel, const float weight, const int size);
-void drawParticles(SDL_Surface *screen);
-void clearParticles();
+void spawn_particle(SDL_Surface *image, const int x, const int y, const int x_vel, const int y_vel, const float weight, const int size);
+void draw_particles(SDL_Surface *screen);
+void clear_particles();
 
 #ifdef __cplusplus
 }

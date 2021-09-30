@@ -8,10 +8,10 @@ extern "C" {
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 
-SDL_Surface* loadImageAsSurface(const char* filename);
-SDL_Surface* createSurface(const unsigned int width, const unsigned int height);
-SDL_Surface* mirrorSurface(SDL_Surface *surface);
-void freeSurface(SDL_Surface **surface);
+SDL_Surface* load_image_as_rgba(const char* filename);
+SDL_Surface* create_rgba_surface(const unsigned int width, const unsigned int height);
+SDL_Surface* mirror_surface(SDL_Surface *surface);
+void free_surface(SDL_Surface **surface);
 
 #ifdef __cplusplus
 }

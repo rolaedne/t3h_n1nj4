@@ -16,42 +16,48 @@
 #include "screens.h"
 
 // Takes care of case if enemy hands touch ninja. you will make with the dead.
-void killplayer(int i) {
-    enemy *e = &nmy[i];
-    if (isDead || !e->nmy_alive) { return; } // don't kill the player if they're already dead, and dead enemies can't hurt the player
+void check_player_collision(enemy *e) {
+    if (isDead || !e->is_alive) { return; } // don't kill the player if they're already dead, and dead enemies can't hurt the player
     bbox player_box = { dest.x - 5, dest.y + 5, 50, 70 };
-    bbox enemy_box = { e->nmydest.x - 10, e->nmydest.y, 50, 50 };
-    if (bbox_col(player_box, enemy_box)) { dead(); }
+    bbox enemy_box = { e->dest.x - 10, e->dest.y, 50, 50 };
+    if (bbox_collision(player_box, enemy_box)) { dead(); }
 }
 
-void nmy_spwn(int i) {
-    enemy *e = &nmy[i];
-    const int right_edge = e->nmydest.x + (BRICK_WIDTH * 2);
-    if ((e->nmydest.x - wrldps.x) < SCREENWIDTH && right_edge > 0) {/*if enemy is alive draw him on screen*/
-        if (e->nmy_alive) {
-            e->onscreen = 1;
-            e->flipped = (e->nmydest.x < dest.x); // living enemies should face the player
-            SDL_Surface *enemy_surface = e->flipped ? e->enemies_flipped[e->nmyani] : e->enemies[e->nmyani];
-            SDL_BlitSurface(enemy_surface, NULL, screen, &e->nmydest);
+void update_animation_frame(enemy *e) {
+    if (e->anim_delay-- <= 0) {
+        e->anim_delay = NMYDLY;
+        e->anim_frame++;
+        if (e->anim_frame >= NMY_FRAMES || e->anim_frames[e->anim_frame] == NULL) { e->anim_frame = 0; }
+    }
+}
+
+void draw_enemy(enemy *e) {
+    const int right_edge = e->dest.x + (BRICK_WIDTH * 2);
+    if ((e->dest.x - wrldps.x) < SCREENWIDTH && right_edge > 0) {/*if enemy is alive draw him on screen*/
+        if (e->is_alive) {
+            e->is_visible = 1;
+            e->is_flipped = (e->dest.x < dest.x); // living enemies should face the player
+            SDL_Surface *enemy_surface = e->is_flipped ? e->anim_frames_flipped[e->anim_frame] : e->anim_frames[e->anim_frame];
+            SDL_BlitSurface(enemy_surface, NULL, screen, &e->dest);
         } else {
-            SDL_Surface *death_surface = e->flipped ? e->deaths_flipped[e->nmy_deathtype] : e->deaths[e->nmy_deathtype];
+            SDL_Surface *death_surface = e->is_flipped ? e->death_frames_flipped[e->death_type] : e->death_frames[e->death_type];
             if (death_surface != NULL) {
-                e->onscreen = 1;
-                if (e->nmy_death_counter > 0 || rand() % 75 == 0) {
-                    blood(e->nmydest);
-                    e->nmy_death_counter--;
+                e->is_visible = 1;
+                if (e->death_bleed_counter > 0 || rand() % 75 == 0) {
+                    spawn_blood_particles(e->dest);
+                    e->death_bleed_counter--;
                 }
-                const int old_x = e->nmydest.x; // drawing off the edge of a surface (screen) will clip the dest rect
-                const int old_y = e->nmydest.y; // TODO: x, y shouldn't be in an SDL_Rect directly used to draw
-                SDL_BlitSurface(death_surface, NULL, screen, &e->nmydest);
-                e->nmydest.x = old_x;
-                e->nmydest.y = old_y;
+                const int old_x = e->dest.x; // drawing off the edge of a surface (screen) will clip the dest rect
+                const int old_y = e->dest.y; // TODO: x, y shouldn't be in an SDL_Rect directly used to draw
+                SDL_BlitSurface(death_surface, NULL, screen, &e->dest);
+                e->dest.x = old_x;
+                e->dest.y = old_y;
             }
         }
     }
 }
 
-void nmy_physics(int i) {
+void enemy_physics(enemy *e) {
     /*****************************************
      *enemy physisc loop
      *collision detection for the enemies
@@ -59,159 +65,150 @@ void nmy_physics(int i) {
      ******************************************/
     int tmp;
 
-    nmy[i].nmydest.y += GRAVITY + nmy[i].enemy_gravity_compound;
-    nmy[i].enemy_gravity_compound += GRAVITY;
+    e->dest.y += GRAVITY + e->gravity_compound;
+    e->gravity_compound += GRAVITY;
 
-    nmy[i].dir[5] = 1;
+    e->dir[5] = 1;
 
-    if (nmy[i].nmydest.y + (BRICK_HEIGHT / 2) > SCREENHEIGHT) {
-        nmy[i].nmy_alive = 0;
-        blood(nmy[i].nmydest);
+    if (e->dest.y + (BRICK_HEIGHT / 2) > SCREENHEIGHT) {
+        e->is_alive = 0;
+        spawn_blood_particles(e->dest);
     }
 
-    if (world[(nmy[i].nmydest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT]
-            [(nmy[i].nmydest.x + 10 + wrldps.x) / BRICK_WIDTH] > 0) {/*checks up and down collision*/
-        if (nmy[i].nmy_alive != 0 &&
-                world[(nmy[i].nmydest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT]
-                [(nmy[i].nmydest.x + 10 + wrldps.x) / BRICK_WIDTH] == 7) {/*lava check*/
-            //blood(nmy[i].nmydest);
-            //nmy[i].nmy_alive=0;
-            nmy[i].dir[0] = 1;
+    if (world[(e->dest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT]
+            [(e->dest.x + 10 + wrldps.x) / BRICK_WIDTH] > 0) {/*checks up and down collision*/
+        if (e->is_alive != 0 &&
+                world[(e->dest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT]
+                [(e->dest.x + 10 + wrldps.x) / BRICK_WIDTH] == 7) {/*lava check*/
+            //spawn_blood_particles(e->nmydest);
+            //e->is_alive=0;
+            e->dir[0] = 1;
         } else {
-            tmp = (((nmy[i].nmydest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
+            tmp = (((e->dest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
             tmp *= BRICK_HEIGHT;
-            nmy[i].enemy_gravity_compound = 0;
-            nmy[i].nmydest.y = tmp;
-            nmy[i].dir[1] = 1;
-            nmy[i].jmpon = 0;
+            e->gravity_compound = 0;
+            e->dest.y = tmp;
+            e->dir[1] = 1;
+            e->jump_is_active = 0;
         }
     }
-    if (world[(nmy[i].nmydest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT]
-            [(nmy[i].nmydest.x + BRICK_WIDTH - 5 + wrldps.x) / BRICK_WIDTH] > 0) {/*checks bottom right*/
-        if (world[(nmy[i].nmydest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT]
-                [(nmy[i].nmydest.x + BRICK_WIDTH - 10 + wrldps.x) / BRICK_WIDTH] == 7
-                && nmy[i].nmy_alive != 0) {/*lava block collision equals death*/
-            nmy[i].dir[0] = 1;
+    if (world[(e->dest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT]
+            [(e->dest.x + BRICK_WIDTH - 5 + wrldps.x) / BRICK_WIDTH] > 0) {/*checks bottom right*/
+        if (world[(e->dest.y + BRICK_HEIGHT - GRAVITY) / BRICK_HEIGHT]
+                [(e->dest.x + BRICK_WIDTH - 10 + wrldps.x) / BRICK_WIDTH] == 7
+                && e->is_alive != 0) {/*lava block collision equals death*/
+            e->dir[0] = 1;
         } else {
-            tmp = (((nmy[i].nmydest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
+            tmp = (((e->dest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
             tmp *= BRICK_HEIGHT;
-            nmy[i].enemy_gravity_compound = 0;
-            nmy[i].nmydest.y = tmp;
-            nmy[i].dir[3] = 1;
-            nmy[i].jmpon = 0;
+            e->gravity_compound = 0;
+            e->dest.y = tmp;
+            e->dir[3] = 1;
+            e->jump_is_active = 0;
         }
     }
-    if (world[(nmy[i].nmydest.y) / BRICK_HEIGHT]
-            [(nmy[i].nmydest.x + BRICK_WIDTH - 10 + wrldps.x) / BRICK_WIDTH] > 0) {/*check top*/
-        tmp = (((nmy[i].nmydest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
+    if (world[(e->dest.y) / BRICK_HEIGHT]
+            [(e->dest.x + BRICK_WIDTH - 10 + wrldps.x) / BRICK_WIDTH] > 0) {/*check top*/
+        tmp = (((e->dest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
         tmp *= BRICK_HEIGHT;
-        nmy[i].enemy_gravity_compound = 0;
-        nmy[i].nmydest.y = tmp + BRICK_HEIGHT;
-        nmy[i].dir[8] = 1;
+        e->gravity_compound = 0;
+        e->dest.y = tmp + BRICK_HEIGHT;
+        e->dir[8] = 1;
     }
-    if (world[(nmy[i].nmydest.y) / BRICK_HEIGHT]
-            [(nmy[i].nmydest.x + wrldps.x) / BRICK_WIDTH] > 0) {/*check top*/
-        tmp = (((nmy[i].nmydest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
+    if (world[(e->dest.y) / BRICK_HEIGHT]
+            [(e->dest.x + wrldps.x) / BRICK_WIDTH] > 0) {/*check top*/
+        tmp = (((e->dest.y + (BRICK_HEIGHT)) - GRAVITY) / BRICK_HEIGHT) - 1;
         tmp *= BRICK_HEIGHT;
-        nmy[i].enemy_gravity_compound = 0;
-        nmy[i].nmydest.y = tmp + BRICK_HEIGHT;
-        nmy[i].dir[8] = 1;
+        e->gravity_compound = 0;
+        e->dest.y = tmp + BRICK_HEIGHT;
+        e->dir[8] = 1;
     }
 
-    if (world[nmy[i].nmydest.y / BRICK_HEIGHT]
-            [(nmy[i].nmydest.x + BRICK_WIDTH - 10 + wrldps.x) / BRICK_WIDTH] > 0) {/*checks side to side block collision*/
-        nmy[i].nmydest.x -= MOVERL;
-        nmy[i].dir[9] = 1;
+    if (world[e->dest.y / BRICK_HEIGHT]
+            [(e->dest.x + BRICK_WIDTH - 10 + wrldps.x) / BRICK_WIDTH] > 0) {/*checks side to side block collision*/
+        e->dest.x -= MOVERL;
+        e->dir[9] = 1;
     }
-    if (world[nmy[i].nmydest.y / BRICK_HEIGHT][(nmy[i].nmydest.x + wrldps.x) / BRICK_WIDTH] > 0) {
-        nmy[i].nmydest.x += MOVERL;
-        nmy[i].dir[7] = 1;
+    if (world[e->dest.y / BRICK_HEIGHT][(e->dest.x + wrldps.x) / BRICK_WIDTH] > 0) {
+        e->dest.x += MOVERL;
+        e->dir[7] = 1;
     }
-    if (world[(nmy[i].nmydest.y + 70) / BRICK_HEIGHT]
-            [(nmy[i].nmydest.x + BRICK_WIDTH - 1 + wrldps.x) / BRICK_WIDTH] > 0) {
-        nmy[i].nmydest.x -= MOVERL;
-        nmy[i].dir[6] = 1;
+    if (world[(e->dest.y + 70) / BRICK_HEIGHT]
+            [(e->dest.x + BRICK_WIDTH - 1 + wrldps.x) / BRICK_WIDTH] > 0) {
+        e->dest.x -= MOVERL;
+        e->dir[6] = 1;
     }
-    if (world[(nmy[i].nmydest.y + 70) / BRICK_HEIGHT][(nmy[i].nmydest.x + wrldps.x) / BRICK_WIDTH] > 0) {
-        nmy[i].nmydest.x += MOVERL;
-        nmy[i].dir[4] = 1;
+    if (world[(e->dest.y + 70) / BRICK_HEIGHT][(e->dest.x + wrldps.x) / BRICK_WIDTH] > 0) {
+        e->dest.x += MOVERL;
+        e->dir[4] = 1;
     }
-    if (world[(nmy[i].nmydest.y + BRICK_HEIGHT - 20) / BRICK_HEIGHT]
-            [(nmy[i].nmydest.x + (BRICK_WIDTH / 2) + wrldps.x) / BRICK_WIDTH] == 7
-            && nmy[i].nmy_alive != 0) {/*fallen into lava pit*/
-        nmy[i].nmy_alive = 0;
-        nmy[i].nmy_deathtype = BYLAVA;
+    if (world[(e->dest.y + BRICK_HEIGHT - 20) / BRICK_HEIGHT]
+            [(e->dest.x + (BRICK_WIDTH / 2) + wrldps.x) / BRICK_WIDTH] == 7
+            && e->is_alive != 0) {/*fallen into lava pit*/
+        e->is_alive = 0;
+        e->death_type = BYLAVA;
 
-        blood(nmy[i].nmydest);
+        spawn_blood_particles(e->dest);
     }
 }/*end nmy physcis*/
 
-void enemyai() {
+void enemy_ai() {
     /***************************************************
      *This is the brain of the enemy. This makes them "think good".
      *Runs through all of their operations to make them
      *function when (an evil?) ninja comes into their world
      ****************************************************/
-    int i, t;
+    for (int i = 0; i < enemymax; i++) {
+        enemy *e = &enemies[i];
+        enemy_physics(e);
+        draw_enemy(e);
+        check_player_collision(e);
+        update_animation_frame(e);
 
-    for (i = 0; i < enemymax; i++) {
-        enemy *e = &nmy[i];
-        nmy_physics(i);
-        nmy_spwn(i);
-        killplayer(i);
-        enemyanimation(i);
-
-        if (nmy[i].onscreen == 1 && nmy[i].nmy_alive == 1) {/*is the enemy on the screen*/
-            if ((nmy[i].dir[4] || nmy[i].dir[7]) && nmy[i].jmpon == 0) {/*block on the left*/
-                nmy[i].enemy_gravity_compound = nmy[i].jmp;
-                nmy[i].jmpon = 1;
+        if (e->is_visible == 1 && e->is_alive == 1) {/*is the enemy on the screen*/
+            if ((e->dir[4] || e->dir[7]) && e->jump_is_active == 0) {/*block on the left*/
+                e->gravity_compound = e->jump_strength;
+                e->jump_is_active = 1;
             }
-            if ((nmy[i].dir[9] || nmy[i].dir[6])
-                    && nmy[i].jmpon == 0) {/*block on the right*/
-                nmy[i].enemy_gravity_compound = nmy[i].jmp;
-                nmy[i].jmpon = 1;
+            if ((e->dir[9] || e->dir[6])
+                    && e->jump_is_active == 0) {/*block on the right*/
+                e->gravity_compound = e->jump_strength;
+                e->jump_is_active = 1;
             }
-            if (nmy[i].dir[3] == 1 || nmy[i].dir[1] == 1 || nmy[i].dir[5] == 1) {/*on the ground or in the air go toward ninja*/
-                if (dest.x > nmy[i].nmydest.x) {
-                    nmy[i].nmydest.x += nmy[i].speed;
+            if (e->dir[3] == 1 || e->dir[1] == 1 || e->dir[5] == 1) {/*on the ground or in the air go toward ninja*/
+                if (dest.x > e->dest.x) {
+                    e->dest.x += e->speed;
                     /*add check for other enemies*/
                 } else {
-                    nmy[i].nmydest.x -= nmy[i].speed;
+                    e->dest.x -= e->speed;
                 }
-                if ((nmy[i].dir[3] == 1 || nmy[i].dir[0] == 1) && nmy[i].dir[1] == 0
-                        && nmy[i].jmpon == 0) {/*a pit is ahead* left*/
-                    nmy[i].enemy_gravity_compound = nmy[i].jmp;
-                    nmy[i].jmpon = 1;
-                } else if ((nmy[i].dir[3] == 0 || nmy[i].dir[0] == 1) && nmy[i].dir[1] == 0
-                        && nmy[i].jmpon == 0) {/*a pit is ahead* left*/
-                    nmy[i].enemy_gravity_compound = nmy[i].jmp;
-                    nmy[i].jmpon = 1;
+                if ((e->dir[3] == 1 || e->dir[0] == 1) && e->dir[1] == 0
+                        && e->jump_is_active == 0) {/*a pit is ahead* left*/
+                    e->gravity_compound = e->jump_strength;
+                    e->jump_is_active = 1;
+                } else if ((e->dir[3] == 0 || e->dir[0] == 1) && e->dir[1] == 0
+                        && e->jump_is_active == 0) {/*a pit is ahead* left*/
+                    e->gravity_compound = e->jump_strength;
+                    e->jump_is_active = 1;
                 }
             }
-        } else if (nmy[i].onscreen == 1 && nmy[i].nmy_alive == 0 && nmy[i].jmpon == 1) {
+        } else if (e->is_visible == 1 && e->is_alive == 0 && e->jump_is_active == 1) {
             /* this gives dead enemies a knockback effect */
             if (ninja_src.x < 180) {
-                nmy[i].nmydest.x -= 5; /*temp val*/
+                e->dest.x -= 5; /*temp val*/
             } else if (ninja_src.x >= 180) {
-                nmy[i].nmydest.x += 5; /*temp val*/
+                e->dest.x += 5; /*temp val*/
             }
             int x, y;
-            x = nmy[i].nmydest.x + nmy[i].nmydest.w / 2;
-            y = nmy[i].nmydest.y + nmy[i].nmydest.h / 2;
+            x = e->dest.x + e->dest.w / 2;
+            y = e->dest.y + e->dest.h / 2;
             x += wrldps.x;
-            addParticle(blood1, x, y, 0, 0, 1.0, 7);
+            spawn_particle(blood1, x, y, 0, 0, 1.0, 7);
         }
-        for (t = 0; t < 10; t++) {/*rests their dir arrray*/
-            nmy[i].dir[t] = 0;
+        for (int t = 0; t < 10; t++) {/*rests their dir arrray*/
+            e->dir[t] = 0;
         }
     }/*end for loop*/
 }
 
-void enemyanimation(int i) {
-    enemy *e = &nmy[i];
-    if (e->nmydly-- <= 0) {
-        e->nmydly = NMYDLY;
-        e->nmyani++;
-        if (e->nmyani >= NMY_FRAMES || e->enemies[e->nmyani] == NULL) { e->nmyani = 0; }
-    }
-}
+

@@ -27,7 +27,7 @@ SDL_Surface *worldfloor, *worldbrick[BRICKS_WORLD];
 SDL_Rect worlddest;
 SDL_Surface *snow;
 
-int isCollision(const int x, const int y) {
+int is_collision(const int x, const int y) {
     const int row = y / BRICK_HEIGHT;
     if (row > WORLD_ROWS || row < 0) { return 1; }
     const int col = x / BRICK_WIDTH;
@@ -40,25 +40,25 @@ void graphics_load() {
     printf("DEBUG: graphics_load()\n");
     /*init images*/
     /* TODO: Move world data from code to data files. */
-    foreground = NULL; //loadImageAsSurface("lvl/foreground0.png");
-    wscore = loadImageAsSurface("lvl/score.png");
-    number = loadImageAsSurface("lvl/number.png");
-    blood1 = loadImageAsSurface("bloods/blood4.png");
-    snow = loadImageAsSurface("bloods/snow.png");
-    sweapon1_1 = loadImageAsSurface("weapons/star1.png");
-    sweapon1_2 = loadImageAsSurface("weapons/star2.png");
+    foreground = NULL; //load_image_as_rgba("lvl/foreground0.png");
+    wscore = load_image_as_rgba("lvl/score.png");
+    number = load_image_as_rgba("lvl/number.png");
+    blood1 = load_image_as_rgba("bloods/blood4.png");
+    snow = load_image_as_rgba("bloods/snow.png");
+    sweapon1_1 = load_image_as_rgba("weapons/star1.png");
+    sweapon1_2 = load_image_as_rgba("weapons/star2.png");
 
     /*inits some world images*/
-    ninja = loadImageAsSurface("chars/ninja.new2.png");
+    ninja = load_image_as_rgba("chars/ninja.new2.png");
 
-    worldfloor = loadImageAsSurface("lvl/floor.png");
-    worldbrick[0] = loadImageAsSurface("lvl/brick0.png");
-    worldbrick[1] = loadImageAsSurface("lvl/brick1.png");
-    worldbrick[2] = loadImageAsSurface("lvl/brick2.png");
-    worldbrick[3] = loadImageAsSurface("lvl/brick3.png");
-    dmgbrick[0] = loadImageAsSurface("lvl/dbrick0.png"); // tile 6: left facing spikes
-    dmgbrick[1] = loadImageAsSurface("lvl/dbrick1.png"); // tile 7: up facing lava
-    dmgbrick[2] = loadImageAsSurface("lvl/dbrick2.png"); // tile 8: right facing spikes
+    worldfloor = load_image_as_rgba("lvl/floor.png");
+    worldbrick[0] = load_image_as_rgba("lvl/brick0.png");
+    worldbrick[1] = load_image_as_rgba("lvl/brick1.png");
+    worldbrick[2] = load_image_as_rgba("lvl/brick2.png");
+    worldbrick[3] = load_image_as_rgba("lvl/brick3.png");
+    dmgbrick[0] = load_image_as_rgba("lvl/dbrick0.png"); // tile 6: left facing spikes
+    dmgbrick[1] = load_image_as_rgba("lvl/dbrick1.png"); // tile 7: up facing lava
+    dmgbrick[2] = load_image_as_rgba("lvl/dbrick2.png"); // tile 8: right facing spikes
 }
 
 
@@ -67,22 +67,22 @@ void graphics_free() {
 
     printf("DEBUG: graphics_free()\n");
 
-    freeSurface(&foreground);
-    freeSurface(&wscore);
-    freeSurface(&number);
-    freeSurface(&blood1);
-    freeSurface(&snow);
-    freeSurface(&sweapon1_1);
-    freeSurface(&sweapon1_2);
-    freeSurface(&ninja);
-    freeSurface(&worldfloor);
+    free_surface(&foreground);
+    free_surface(&wscore);
+    free_surface(&number);
+    free_surface(&blood1);
+    free_surface(&snow);
+    free_surface(&sweapon1_1);
+    free_surface(&sweapon1_2);
+    free_surface(&ninja);
+    free_surface(&worldfloor);
 
-    for(i = 0; i < BRICKS_WORLD; ++i) freeSurface(&worldbrick[i]);
-    for(i = 0; i < BRICKS_DAMAGE; ++i) freeSurface(&dmgbrick[i]);
+    for(i = 0; i < BRICKS_WORLD; ++i) free_surface(&worldbrick[i]);
+    for(i = 0; i < BRICKS_DAMAGE; ++i) free_surface(&dmgbrick[i]);
 }
 
 
-void buildw() {
+void load_current_world_from_file() {
     /***********************************************
      *creats the world(s)
      *reads in file that will constuct the world
@@ -95,15 +95,15 @@ void buildw() {
     char lvlname[50];
     FILE* world_file;
 
-    printf("DEBUG: buildw()\n");
+    printf("DEBUG: load_current_world_from_file()\n");
     /* free the memory used by world, if any*/
-    freeSurface(&background);
+    free_surface(&background);
     for(int i = 0; i < NMY; ++i) {
-        nmy[i].onscreen = 0;
-        for(int x = 0; x < NMY_FRAMES; ++x) { freeSurface(&nmy[i].enemies[x]); freeSurface(&nmy[i].enemies_flipped[x]); }
-        for(int x = 0; x < NMY_DEATHS; ++x) { freeSurface(&nmy[i].deaths[x]); freeSurface(&nmy[i].deaths_flipped[x]); }
+        enemies[i].is_visible = 0;
+        for(int x = 0; x < NMY_FRAMES; ++x) { free_surface(&enemies[i].anim_frames[x]); free_surface(&enemies[i].anim_frames_flipped[x]); }
+        for(int x = 0; x < NMY_DEATHS; ++x) { free_surface(&enemies[i].death_frames[x]); free_surface(&enemies[i].death_frames_flipped[x]); }
     }
-    clearParticles();
+    clear_particles();
 
     /********************************************
      *world stuff needed to make world
@@ -137,7 +137,7 @@ void buildw() {
 
     /*initialises alive loop for enemies*/
     for (int i = 0; i < NMY; i++) {
-        nmy[i].nmy_alive = 0;
+        enemies[i].is_alive = 0;
     }
 
     /*world file to be used*/
@@ -146,7 +146,7 @@ void buildw() {
     world_file = fopen(lvlname, "r");
 
     if (world_file == NULL) {/*no more worlds to be read in*/
-        winner();
+        show_victory_screen();
         printf("winner was reached\n");
         graphics_free();
         exit(EXIT_SUCCESS);
@@ -158,52 +158,52 @@ void buildw() {
     enemymax = x; /*set max amount of enemies*/
     for (int i = 0; i < NMY && i < enemymax; i++) {/*set enemy destinations from file*/
         fscanf(world_file, "%d", &x);
-        nmy[i].nmytype = x;
+        enemies[i].type = x;
         fscanf(world_file, "%d", &x);
-        nmy[i].nmydest.x = x*BRICK_WIDTH;
+        enemies[i].dest.x = x*BRICK_WIDTH;
         fscanf(world_file, "%d", &x);
-        nmy[i].nmydest.y = x*BRICK_HEIGHT;
-        nmy[i].nmy_alive = 1;
-        nmy[i].jmpon = 0;
-        nmy[i].flipped = 0;
-        nmy[i].nmyani = 0; /*what animation frame to start on*/
-        nmy[i].nmydly = 0; /*used to count in a delay funt*/
-        nmy[i].onscreen = 0;
+        enemies[i].dest.y = x*BRICK_HEIGHT;
+        enemies[i].is_alive = 1;
+        enemies[i].jump_is_active = 0;
+        enemies[i].is_flipped = 0;
+        enemies[i].anim_frame = 0; /*what animation frame to start on*/
+        enemies[i].anim_delay = 0; /*used to count in a delay funt*/
+        enemies[i].is_visible = 0;
 
         /* TODO: Move enemy information out of code and into data files. */
-        if (nmy[i].nmytype == 0) {/*enemy type 0s quality*/
-            nmy[i].enemies[0] = loadImageAsSurface("chars/turco0.png");
-            nmy[i].enemies[1] = loadImageAsSurface("chars/turco1.png");
+        if (enemies[i].type == 0) {/*enemy type 0s quality*/
+            enemies[i].anim_frames[0] = load_image_as_rgba("chars/turco0.png");
+            enemies[i].anim_frames[1] = load_image_as_rgba("chars/turco1.png");
 
             /*death image, sword,*/
-            nmy[i].deaths[BYSWORD] = loadImageAsSurface("chars/turco2.png");
-            nmy[i].deaths[BYSTAR] = loadImageAsSurface("chars/turco3.png");
-            nmy[i].deaths[BYLAVA] = loadImageAsSurface("chars/turco4.png");
+            enemies[i].death_frames[BYSWORD] = load_image_as_rgba("chars/turco2.png");
+            enemies[i].death_frames[BYSTAR] = load_image_as_rgba("chars/turco3.png");
+            enemies[i].death_frames[BYLAVA] = load_image_as_rgba("chars/turco4.png");
 
-            nmy[i].jmp = -40;
-            nmy[i].speed = 4;
-        } else if (nmy[i].nmytype == 1) {
-            nmy[i].enemies[0] = loadImageAsSurface("chars/one0.png");
-            nmy[i].enemies[1] = loadImageAsSurface("chars/one1.png");
-            nmy[i].enemies[2] = loadImageAsSurface("chars/one2.png");
-            nmy[i].enemies[3] = loadImageAsSurface("chars/one3.png");
+            enemies[i].jump_strength = -40;
+            enemies[i].speed = 4;
+        } else if (enemies[i].type == 1) {
+            enemies[i].anim_frames[0] = load_image_as_rgba("chars/one0.png");
+            enemies[i].anim_frames[1] = load_image_as_rgba("chars/one1.png");
+            enemies[i].anim_frames[2] = load_image_as_rgba("chars/one2.png");
+            enemies[i].anim_frames[3] = load_image_as_rgba("chars/one3.png");
 
-            nmy[i].jmp = -45;
-            nmy[i].speed = 5;
-        } else if (nmy[i].nmytype == 2) {
-            nmy[i].enemies[0] = loadImageAsSurface("chars/rninja0.png");
-            nmy[i].enemies[1] = loadImageAsSurface("chars/rninja1.png");
-            nmy[i].enemies[2] = loadImageAsSurface("chars/rninja2.png");
-            nmy[i].enemies[3] = loadImageAsSurface("chars/rninja3.png");
-            nmy[i].enemies[4] = loadImageAsSurface("chars/rninja4.png");
-            nmy[i].enemies[5] = loadImageAsSurface("chars/rninja5.png");
+            enemies[i].jump_strength = -45;
+            enemies[i].speed = 5;
+        } else if (enemies[i].type == 2) {
+            enemies[i].anim_frames[0] = load_image_as_rgba("chars/rninja0.png");
+            enemies[i].anim_frames[1] = load_image_as_rgba("chars/rninja1.png");
+            enemies[i].anim_frames[2] = load_image_as_rgba("chars/rninja2.png");
+            enemies[i].anim_frames[3] = load_image_as_rgba("chars/rninja3.png");
+            enemies[i].anim_frames[4] = load_image_as_rgba("chars/rninja4.png");
+            enemies[i].anim_frames[5] = load_image_as_rgba("chars/rninja5.png");
 
-            nmy[i].jmp = -55;
-            nmy[i].speed = 8;
+            enemies[i].jump_strength = -55;
+            enemies[i].speed = 8;
         }
 
-        for (int f = 0; f < NMY_FRAMES; ++f) { nmy[i].enemies_flipped[f] = mirrorSurface(nmy[i].enemies[f]); }
-        for (int f = 0; f < NMY_DEATHS; ++f) { nmy[i].deaths_flipped[f] = mirrorSurface(nmy[i].deaths[f]); }
+        for (int f = 0; f < NMY_FRAMES; ++f) { enemies[i].anim_frames_flipped[f] = mirror_surface(enemies[i].anim_frames[f]); }
+        for (int f = 0; f < NMY_DEATHS; ++f) { enemies[i].death_frames_flipped[f] = mirror_surface(enemies[i].death_frames[f]); }
     }
 
     fscanf(world_file, "%d", &x);
@@ -211,8 +211,8 @@ void buildw() {
 
     // START: Generate background image
     //sprintf(lvlname, "lvl/background%d.png", worldnum);
-    //background = loadImageAsSurface(lvlname);
-    background = createSurface(x * BRICK_WIDTH, SCREENHEIGHT);
+    //background = load_image_as_rgba(lvlname);
+    background = create_rgba_surface(x * BRICK_WIDTH, SCREENHEIGHT);
     SDL_Rect dst; dst.x = 0; dst.y = 0; dst.w = background->w; dst.h = background->h;
 
     SDL_FillRect(background, &dst, SDL_MapRGB(background->format, 0, 0, 0)); // black
@@ -239,7 +239,7 @@ void buildw() {
     // END: Generate background image
 
     //sprintf(lvlname, "lvl/foreground%d.png", worldnum);
-    //foreground = NULL; //loadImageAsSurface(lvlname);
+    //foreground = NULL; //load_image_as_rgba(lvlname);
 
 
     int i = 0;
@@ -258,18 +258,13 @@ void buildw() {
 
 void set_screen() {
     printf("DEBUG: set_screen()\n");
-    int i, t;
     const int world_height = 6;
-    /*******************************************
-     *sets up the screen for score and the
-     *game board to be displayed on the screen
-     ********************************************/
 
     SDL_BlitSurface(background, &wrldps, screen, NULL);
 
     /* TODO: Move tile information out of code and into data files. */
-    for (i = 0; i < world_length; i++) {
-        for (t = 0; t < world_height; t++) {
+    for (int i = 0; i < world_length; i++) {
+        for (int t = 0; t < world_height; t++) {
             worlddest.y = t*BRICK_HEIGHT;
             worlddest.x = i*BRICK_WIDTH;
             if (world[t][i] == 1) {
@@ -311,38 +306,36 @@ void world_mover() {
     if ((dest.x + wrldps.x + (SCREENWIDTH / 2))>(BRICK_WIDTH * world_length)) {/*can't scroll anymore to the right*/
         if ((dest.x + wrldps.x + 25)>(BRICK_WIDTH * world_length)) {/*reached the end of the screen*/
             worldnum++;
-            buildw(); // Doesn't take worldnum as a parameter
+            load_current_world_from_file(); // Doesn't take worldnum as a parameter
         }
     } else if (dest.x > SCREENWIDTH / 2) {/*moves screen if past half screen lenght*/
         dest.x = SCREENWIDTH / 2;
         wrldps.x += MOVERL;
-        for (i = 0; i < enemymax; i++) { nmy[i].nmydest.x -= MOVERL; }
+        for (i = 0; i < enemymax; i++) { enemies[i].dest.x -= MOVERL; }
     } else if (dest.x < 0) {/*can't run off the left side*/
         dest.x = 0;
     }
 }
 
 
-void let_it_snow() {
+void spawn_snow_particles() {
     int i = 0;
     do {
-        int x = rand() % (640 * 2) + wrldps.x;
-        int y = 0;
-        float weight = 0.2 + (rand() % 10 * 0.01);
-        addParticle(snow, x, y, (rand() % 4 + 1) * -1, rand() % 4 + 1, weight, bRand(3, 5));
-    } while (++i < worldnum);
+        const int x = rand() % (SCREENWIDTH * 2) + wrldps.x;
+        const int y = 0;
+        const float weight = 0.2 + (rand() % 10 * 0.01);
+        spawn_particle(snow, x, y, -1 * bounded_rand(1, 5), bounded_rand(1, 5), weight, bounded_rand(3, 5));
+    } while (++i < worldnum); // snow gets thicker the higher the worldnum
 }
 
 
-void blood(const SDL_Rect bleed) {
-    int x, y;
-    x = bleed.x + bleed.w / 2;
-    y = bleed.y + bleed.h / 2;
-    x += wrldps.x;
+void spawn_blood_particles(const SDL_Rect target) {
+    const int x = wrldps.x + target.x + (target.w / 2);
+    const int y = target.y + (target.h / 2);
 
-    addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0, bRand(4, 5));
-    addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(6, 20), 1.0, bRand(4, 6));
-    addParticle(blood1, x, y, bRand(1, 4) *-1, -1 * bRand(2, 8), 1.0, bRand(4, 7));
-    addParticle(blood1, x, y, bRand(1, 5), -1 * bRand(3, 10), 1.0, bRand(4, 8));
-    addParticle(blood1, x, y, bRand(0, 3), -1 * bRand(4, 12), 1.0, bRand(4, 9));
+    spawn_particle(blood1, x, y, bounded_rand(1, 5), -1 * bounded_rand(3, 10), 1.0, bounded_rand(4, 5));
+    spawn_particle(blood1, x, y, bounded_rand(0, 3), -1 * bounded_rand(6, 20), 1.0, bounded_rand(4, 6));
+    spawn_particle(blood1, x, y, bounded_rand(1, 4) *-1, -1 * bounded_rand(2, 8), 1.0, bounded_rand(4, 7));
+    spawn_particle(blood1, x, y, bounded_rand(1, 5), -1 * bounded_rand(3, 10), 1.0, bounded_rand(4, 8));
+    spawn_particle(blood1, x, y, bounded_rand(0, 3), -1 * bounded_rand(4, 12), 1.0, bounded_rand(4, 9));
 }

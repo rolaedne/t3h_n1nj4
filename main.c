@@ -16,7 +16,7 @@
 
 void show_start_screen();
 void play_intro_movie();
-void score_ui();
+void draw_score_ui();
 void update_screen();
 
 int main() {
@@ -49,15 +49,13 @@ int main() {
     jump = 0;
     gravity_compound = 0;
     worldnum = 0; /*set world number initially*/
-    buildw(); /*builds the world*/
-
     graphics_load();
+    load_current_world_from_file(); /*builds the world*/
 
-    set_screen();
-    SDL_BlitSurface(ninja, &ninja_src, screen, &dest);
-    update_screen();
+    //SDL_BlitSurface(ninja, &ninja_src, screen, &dest);
+    //update_screen();
+
     int skipLevel = 0;
-
     Uint32 ticks, delay, tmp_ps = 0;
     Uint8* keys;
     while (SDL_PollEvent(&event) != -1) {//main even loop
@@ -143,7 +141,7 @@ int main() {
         if (skipLevel == 2) {
             printf("DEBUG: Cheater, skipping level %d\n", worldnum);
             worldnum++;
-            buildw();
+            load_current_world_from_file();
             skipLevel = 0;
         }
         if (jump != 0) {
@@ -173,14 +171,14 @@ int main() {
 
         ticks = SDL_GetTicks();
 
-        SDL_BlitSurface(background, &wrldps, screen, NULL);
-        SDL_BlitSurface(ninja, &ninja_src, screen, &dest);
-        special_throw();
-        enemyai();
-        score_ui();
-        let_it_snow();
-        drawParticles(screen);
-        SDL_BlitSurface(foreground, &wrldps, screen, NULL);
+        spawn_snow_particles(); // precipitation_tick
+        SDL_BlitSurface(background, &wrldps, screen, NULL); // draw_background || draw_world
+        SDL_BlitSurface(ninja, &ninja_src, screen, &dest); // draw_player
+        special_throw(); // special_attack_physics_tick && draw_special_attack
+        enemy_ai(); // enemies_tick && draw_enemies
+        draw_particles(screen);
+        SDL_BlitSurface(foreground, &wrldps, screen, NULL); // draw_shadows || draw_overlays
+        draw_score_ui();
         update_screen();
 
         delay = SDL_GetTicks() - ticks;
@@ -204,7 +202,7 @@ int get_length(int val) {
     return val_length;
 }
 
-void score_ui() {
+void draw_score_ui() {
     SDL_Rect score_dest = { 10, 10 };
     SDL_BlitSurface(wscore, NULL, screen, &score_dest);
 
@@ -224,15 +222,15 @@ void score_ui() {
 void show_start_screen() {
     printf("DEBUG: startScreen\n");
 
-    SDL_Surface *start_screen_surface = loadImageAsSurface("lvl/start_screen.png");
+    SDL_Surface *start_screen_surface = load_image_as_rgba("lvl/start_screen.png");
 
     SDL_BlitSurface(start_screen_surface, NULL, screen, NULL);
     SDL_PumpEvents();
     update_screen();
 
     while (TRUE) {
-        if (delayMs(3000)) {
-            freeSurface(&start_screen_surface);
+        if (delay_ms_skippable(3000)) {
+            free_surface(&start_screen_surface);
             return;
         }
         play_intro_movie();
@@ -260,16 +258,16 @@ void play_intro_movie() {
 
     color = SDL_MapRGB(screen->format, 0, 0, 0);
 
-    lightn = loadImageAsSurface("intro_mov/lightening.png");
+    lightn = load_image_as_rgba("intro_mov/lightening.png");
     SDL_BlitSurface(lightn, NULL, screen, NULL);
     update_screen();
     SDL_FreeSurface(lightn);
-    if (delayMs(60 * 5)) return;
+    if (delay_ms_skippable(60 * 5)) return;
 
-    backdrop = loadImageAsSurface("intro_mov/backdrop.png");
+    backdrop = load_image_as_rgba("intro_mov/backdrop.png");
     SDL_BlitSurface(backdrop, NULL, screen, NULL);
     update_screen();
-    if (delayMs(60 * 5)) return;
+    if (delay_ms_skippable(60 * 5)) return;
 
     ndest.y = 200;
     ndest.x = 480;
@@ -278,7 +276,7 @@ void play_intro_movie() {
     bardest.h = 240;
     bardest.w = 640;
 
-    rl = loadImageAsSurface("intro_mov/redleg.png");
+    rl = load_image_as_rgba("intro_mov/redleg.png");
     for (i = 0; i < 50; i++) {
         SDL_BlitSurface(backdrop, NULL, screen, NULL);
         if ((i % 5) == 0) {
@@ -293,11 +291,11 @@ void play_intro_movie() {
         SDL_BlitSurface(rl, NULL, screen, &ndest);
         SDL_FillRect(screen, &bardest, color);
         update_screen();
-        if (delayMs(30)) return;
+        if (delay_ms_skippable(30)) return;
     }
     SDL_FreeSurface(rl);
 
-    bl = loadImageAsSurface("intro_mov/blackleg.png");
+    bl = load_image_as_rgba("intro_mov/blackleg.png");
     ndest.x = 120;
     for (i = 0; i < 50; i++) {
         SDL_BlitSurface(backdrop, NULL, screen, NULL);
@@ -313,18 +311,18 @@ void play_intro_movie() {
         SDL_BlitSurface(bl, NULL, screen, &ndest);
         SDL_FillRect(screen, &bardest, color);
         update_screen();
-        if (delayMs(30)) return;
+        if (delay_ms_skippable(30)) return;
     }
     SDL_FreeSurface(bl);
 
-    grass = loadImageAsSurface("intro_mov/grass.png");
+    grass = load_image_as_rgba("intro_mov/grass.png");
     SDL_BlitSurface(grass, NULL, screen, NULL);
     update_screen();
     SDL_FreeSurface(grass);
-    if (delayMs(60 * 2)) return;
+    if (delay_ms_skippable(60 * 2)) return;
 
-    black = loadImageAsSurface("intro_mov/black.png");
-    red = loadImageAsSurface("intro_mov/red.png");
+    black = load_image_as_rgba("intro_mov/black.png");
+    red = load_image_as_rgba("intro_mov/red.png");
     ndest.x = 0;
     ndest.y = SCREENHEIGHT / 2;
     SDL_BlitSurface(black, NULL, screen, &ndest);
@@ -334,7 +332,7 @@ void play_intro_movie() {
     update_screen();
     SDL_FreeSurface(black);
     SDL_FreeSurface(red);
-    if (delayMs(60 * 5)) return;
+    if (delay_ms_skippable(60 * 5)) return;
 
     /*****************************************
      *beutiful text
@@ -345,56 +343,56 @@ void play_intro_movie() {
 
     SDL_FillRect(screen, NULL, color);
     SDL_BlitSurface(backdrop, NULL, screen, NULL);
-    txt1 = loadImageAsSurface("intro_mov/txt1.png");
+    txt1 = load_image_as_rgba("intro_mov/txt1.png");
     SDL_BlitSurface(txt1, NULL, screen, &ndest);
     update_screen();
     SDL_FreeSurface(txt1);
-    if (delayMs(textDelayMs)) return;
+    if (delay_ms_skippable(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
-    txt2 = loadImageAsSurface("intro_mov/txt2.png");
+    txt2 = load_image_as_rgba("intro_mov/txt2.png");
     SDL_BlitSurface(txt2, NULL, screen, &ndest);
     update_screen();
     SDL_FreeSurface(txt2);
-    if (delayMs(textDelayMs)) return;
+    if (delay_ms_skippable(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
-    txt3 = loadImageAsSurface("intro_mov/txt3.png");
+    txt3 = load_image_as_rgba("intro_mov/txt3.png");
     SDL_BlitSurface(txt3, NULL, screen, &ndest);
     update_screen();
     SDL_FreeSurface(txt3);
-    if (delayMs(textDelayMs)) return;
+    if (delay_ms_skippable(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
-    txt4 = loadImageAsSurface("intro_mov/txt4.png");
+    txt4 = load_image_as_rgba("intro_mov/txt4.png");
     SDL_BlitSurface(txt4, NULL, screen, &ndest);
     update_screen();
     SDL_FreeSurface(txt4);
-    if (delayMs(textDelayMs)) return;
+    if (delay_ms_skippable(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
-    txt5 = loadImageAsSurface("intro_mov/txt5.png");
+    txt5 = load_image_as_rgba("intro_mov/txt5.png");
     SDL_BlitSurface(txt5, NULL, screen, &ndest);
     update_screen();
     SDL_FreeSurface(txt5);
-    if (delayMs(textDelayMs)) return;
+    if (delay_ms_skippable(textDelayMs)) return;
     ndest.x += 50;
     ndest.y += 50;
-    txt6 = loadImageAsSurface("intro_mov/txt6.png");
+    txt6 = load_image_as_rgba("intro_mov/txt6.png");
     SDL_BlitSurface(txt6, NULL, screen, &ndest);
     update_screen();
     SDL_FreeSurface(txt6);
-    if (delayMs(textDelayMs)) return;
+    if (delay_ms_skippable(textDelayMs)) return;
     /*end text*/
 
-    ninjaborn = loadImageAsSurface("intro_mov/ninja_born.png");
+    ninjaborn = load_image_as_rgba("intro_mov/ninja_born.png");
     SDL_FillRect(screen, NULL, color);
     SDL_BlitSurface(backdrop, NULL, screen, NULL);
     SDL_BlitSurface(ninjaborn, NULL, screen, NULL);
     update_screen();
     SDL_FreeSurface(backdrop);
     SDL_FreeSurface(ninjaborn);
-    if (delayMs(60 * 30)) return;
+    if (delay_ms_skippable(60 * 30)) return;
 
     /* free the memory we've used for the movie */
 }
@@ -410,12 +408,12 @@ void dead() {
     score -= 10; if (score < 0) score = 0;
 
     SDL_Rect bloodSpawn = { dest.x, dest.y, dest.w, dest.h };
-    blood(bloodSpawn);
+    spawn_blood_particles(bloodSpawn);
 
     int vertical_accumulator = 0;
 
     int delayWait = 750; // Give the player a moment to see how they died
-    while (!delayMsNoSkip(MSECS_PER_FRAME) && delayWait > 0) {
+    while (!delay_ms_unskippable(MSECS_PER_FRAME) && delayWait > 0) {
         ninja_src.y = 0;
         if (ninja_src.x < 180) {
             ninja_src.x = 0;
@@ -428,18 +426,18 @@ void dead() {
         bloodSpawn.y = dest.y;
         const int old_x = bloodSpawn.x;
         bloodSpawn.y -= vertical_accumulator++;
-        blood(bloodSpawn);
-        bloodSpawn.x = old_x - bRand(10, 25);
-        blood(bloodSpawn);
-        bloodSpawn.x = old_x + bRand(10, 25);
-        blood(bloodSpawn);
+        spawn_blood_particles(bloodSpawn);
+        bloodSpawn.x = old_x - bounded_rand(10, 25);
+        spawn_blood_particles(bloodSpawn);
+        bloodSpawn.x = old_x + bounded_rand(10, 25);
+        spawn_blood_particles(bloodSpawn);
         bloodSpawn.x = old_x;
         special_throw();
         physics();
-        enemyai();
-        score_ui();
-        let_it_snow();
-        drawParticles(screen);
+        enemy_ai();
+        draw_score_ui();
+        spawn_snow_particles();
+        draw_particles(screen);
         update_screen();
 
         delayWait -= MSECS_PER_FRAME;
@@ -447,28 +445,28 @@ void dead() {
 
     SDL_Rect corpse_dest = { 395, 295, 0, 0 };
     SDL_Rect corpse_src = { 300, 0, 60, 80 };
-    SDL_Surface *death_screen = loadImageAsSurface("lvl/dead.png");
+    SDL_Surface *death_screen = load_image_as_rgba("lvl/dead.png");
     SDL_BlitSurface(death_screen, NULL, screen, NULL); /*print dead screen*/
     SDL_BlitSurface(ninja, &corpse_src, screen, &corpse_dest);
     update_screen();
-    freeSurface(&death_screen);
+    free_surface(&death_screen);
 
     sattack = 0;
     isDead = FALSE;
-    while (!delayMs(100));
-    buildw();
+    while (!delay_ms_skippable(100));
+    load_current_world_from_file();
 }
 
 
 // Game over (as winner) screen
-void winner() {
+void show_victory_screen() {
     printf("DEBUG: ya won, bro\n");
-    SDL_Surface *winnerimg = loadImageAsSurface("lvl/winner.png");
+    SDL_Surface *winnerimg = load_image_as_rgba("lvl/winner.png");
     SDL_BlitSurface(winnerimg, NULL, screen, NULL);
     update_screen();
-    freeSurface(&winnerimg);
+    free_surface(&winnerimg);
 
-    while(!delayMs(100));
+    while(!delay_ms_skippable(100));
 }
 
 

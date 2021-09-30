@@ -9,12 +9,12 @@ extern "C" {
 
 typedef enum {
     FALSE = 0, TRUE = 1
-} BOOLEAN;
+} Boolean;
 
-int bRand(int min, int max);
+int bounded_rand(int min, int max);
 
-int delayMsNoSkip(const unsigned int msToDelay);
-int delayMs(const unsigned int);
+int delay_ms_unskippable(const unsigned int ms_to_delay);
+int delay_ms_skippable(const unsigned int ms_to_delay);
 
 typedef struct {
     int x;
@@ -23,7 +23,7 @@ typedef struct {
     int h;
 } bbox;
 
-int bbox_col(bbox box1, bbox box2);
+int bbox_collision(bbox box1, bbox box2);
 
 SDL_Event event;
 

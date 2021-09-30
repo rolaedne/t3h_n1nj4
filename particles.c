@@ -7,12 +7,29 @@
 #define MAX_PARTICLES 1024
 Particle particles[MAX_PARTICLES];
 
-int gravity_accumulator = 3;
-int max_y_vel = 25;
+const int gravity_accumulator = 3;
+const int max_y_vel = 25;
 
-void applyParticlePhysics(Particle *p);
+void draw_particle(SDL_Surface *screen, Particle *p) {
+    SDL_Rect src; src.x = p->size; src.y = p->size; src.w = p->size; src.h = p->size;
+    SDL_Rect dest; dest.x = p->x - wrldps.x; dest.y = p->y;
+    SDL_BlitSurface(p->image, &src, screen, &dest);
+}
 
-void addParticle(SDL_Surface *image, const int x, const int y, const int x_vel, const int y_vel, const float weight, const int size) {
+void persist_to_background(Particle *p) {
+    p->x += wrldps.x;
+    draw_particle(background, p);
+    p->image = NULL;
+}
+
+void apply_particle_physics(Particle *p) {
+    if (p->y_vel > max_y_vel) { p->y_vel = max_y_vel; }
+    p->y += p->y_vel;
+    p->y_vel += (gravity_accumulator * p->weight);
+    p->x += p->x_vel;
+}
+
+void spawn_particle(SDL_Surface *image, const int x, const int y, const int x_vel, const int y_vel, const float weight, const int size) {
     Particle *p = NULL;
     for (int i=0; i < MAX_PARTICLES; ++i) {
         if (particles[i].image == NULL) {
@@ -33,42 +50,20 @@ void addParticle(SDL_Surface *image, const int x, const int y, const int x_vel, 
     p->size = size;
 }
 
-void drawParticle(SDL_Surface *screen, Particle *p) {
-    SDL_Rect src; src.x = p->size; src.y = p->size; src.w = p->size; src.h = p->size;
-    SDL_Rect dest; dest.x = p->x - wrldps.x; dest.y = p->y;
-    SDL_BlitSurface(p->image, &src, screen, &dest);
-}
-
-void persistToBackground(Particle *p) {
-    p->x += wrldps.x;
-    drawParticle(background, p);
-    p->image = NULL;
-}
-
-void drawParticles(SDL_Surface *screen) {
-    Particle *p = NULL;
+void draw_particles(SDL_Surface *screen) {
     for (int i=0; i < MAX_PARTICLES; ++i) {
         if (particles[i].image != NULL) {
-            p = &particles[i];
-            applyParticlePhysics(p);
-            if (isCollision(p->x, p->y)) {
-                persistToBackground(p);
+            Particle *p = &particles[i];
+            apply_particle_physics(p);
+            if (is_collision(p->x, p->y)) {
+                persist_to_background(p);
             } else {
-                drawParticle(screen, p);
+                draw_particle(screen, p);
             }
         }
     }
 }
 
-void applyParticlePhysics(Particle *p) {
-    if (p->y_vel > max_y_vel) {
-        p->y_vel = max_y_vel;
-    }
-    p->y += p->y_vel;
-    p->y_vel += (gravity_accumulator * p->weight);
-    p->x += p->x_vel;
-}
-
-void clearParticles() {
-    for (int i=0; i < MAX_PARTICLES; ++i) { particles[i].image = NULL; }
+void clear_particles() {
+    for (int i = 0; i < MAX_PARTICLES; ++i) { particles[i].image = NULL; }
 }

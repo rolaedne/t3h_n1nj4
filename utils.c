@@ -2,7 +2,7 @@
 #include "utils.h"
 
 // Bounded random
-int bRand(const int min, const int max) {
+int bounded_rand(const int min, const int max) {
     const int random = rand() % max;
     if (random < min) {
         return random + min;
@@ -10,50 +10,29 @@ int bRand(const int min, const int max) {
     return random;
 }
 
-int twoblock_col(
-    const int bb1x, const int bb1y, const int bb1w, const int bb1h,
-    const int bb2x, const int bb2y, const int bb2w, const int bb2h
-) {
-    /*check upper left corner of bb2*/
-    if (bb1x <= bb2x && bb2x <= bb1x + bb1w)
-        if (bb1y <= bb2y && bb2y <= bb1y + bb1h)
-            return 1;
-
-    /*check upper right corner of bb2*/
-    if (bb1x <= bb2x + bb2w && bb2x + bb2w <= bb1x + bb1w)
-        if (bb1y <= bb2y && bb2y <= bb1y + bb1h)
-            return 1;
-
-    /*check bottom left corner of bb2*/
-    if (bb1x <= bb2x && bb2x <= bb1x + bb1w)
-        if (bb1y <= bb2y + bb2h && bb2y + bb2h <= bb1y + bb1h)
-            return 1;
-
-    /*check bottom right corner of bb2*/
-    if (bb1x <= bb2x + bb2w && bb2x + bb2w <= bb1x + bb1w)
-        if (bb1y <= bb2y + bb2h && bb2y + bb2h <= bb1y + bb1h)
-            return 1;
+int bbox_collision(bbox box1, bbox box2) {
+    if (box1.x <= box2.x && box2.x <= box1.x + box1.w) {
+        if (box1.y <= box2.y && box2.y <= box1.y + box1.h) { return 1; }  // check upper left corner of box2.
+        if (box1.y <= box2.y + box2.h && box2.y + box2.h <= box1.y + box1.h) { return 1; } // check bottom left corner of box2.
+    }
+    if (box1.x <= box2.x + box2.w && box2.x + box2.w <= box1.x + box1.w) {
+        if (box1.y <= box2.y && box2.y <= box1.y + box1.h) { return 1; } //check upper right corner of box2.
+        if (box1.y <= box2.y + box2.h && box2.y + box2.h <= box1.y + box1.h) { return 1; } // check bottom right corner of box2.
+    }
     return 0;
 }
 
-int bbox_col(bbox box1, bbox box2) {
-    return twoblock_col(
-        box1.x, box1.y, box1.w, box1.h,
-        box2.x, box2.y, box2.w, box2.h
-    );
-}
-
-BOOLEAN skippable = TRUE;
-int delayMsNoSkip(const unsigned int msToDelay) {
+Boolean skippable = TRUE;
+int delay_ms_unskippable(const unsigned int ms_to_delay) {
     skippable = FALSE;
-    const int result = delayMs(msToDelay);
+    const int result = delay_ms_skippable(ms_to_delay);
     skippable = TRUE;
     return result;
 }
 
-int delayMs(const unsigned int msToDelay) {
-    int msecs_waited = 0;
-    while(msecs_waited < msToDelay) {
+int delay_ms_skippable(const unsigned int ms_to_delay) {
+    unsigned int msecs_waited = 0;
+    while(msecs_waited < ms_to_delay) {
         msecs_waited += 10;
         SDL_Delay(10);
         if (SDL_PollEvent(&event)) {

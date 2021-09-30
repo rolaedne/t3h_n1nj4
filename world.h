@@ -34,12 +34,12 @@ int enemymax;
 
 void graphics_load();
 void graphics_free();
-void let_it_snow();
-void blood(SDL_Rect bleed);
+void spawn_snow_particles();
+void spawn_blood_particles(SDL_Rect bleed);
 void set_screen();
-void buildw();
+void load_current_world_from_file();
 void world_mover();
-int isCollision(const int x, const int y);
+int is_collision(const int x, const int y);
 
 #ifdef __cplusplus
 }

@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 void dead();
-void winner();
+void show_victory_screen();
 
 #ifdef __cplusplus
 }

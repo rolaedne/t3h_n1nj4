@@ -81,15 +81,15 @@ void physics() {
     int testX = ninja_world_x + BRICK_WIDTH - 10;
     int collision_type;
     int collision_type2;
-    collision_type = isCollision(ninja_world_x + 10, testY); // left foot
-    collision_type2 = isCollision(testX, testY); // right foot
+    collision_type = is_collision(ninja_world_x + 10, testY); // left foot
+    collision_type2 = is_collision(testX, testY); // right foot
     if (collision_type || collision_type2) {
         if (collision_type == 7 && (collision_type2 == 7 || collision_type2 == 0)) { dead(); return; } // Tile 7 = up facing lava
         if (collision_type == 0 && collision_type2 == 7) { dead(); return; } // Tile 7 = up facing lava
         dest.y = (testY / BRICK_HEIGHT - 1) * BRICK_HEIGHT;
         jump = 0; gravity_compound = 0;
         ninja_src.y = 80; // set frame to on the ground
-    } else if (isCollision(testX, dest.y) || isCollision(ninja_world_x, dest.y)) {/*will check bootom*/
+    } else if (is_collision(testX, dest.y) || is_collision(ninja_world_x, dest.y)) {/*will check bootom*/
         dest.y = (testY / BRICK_HEIGHT) * BRICK_HEIGHT;
         gravity_compound = 0;
     }
@@ -97,11 +97,11 @@ void physics() {
     testX = ninja_world_x + BRICK_WIDTH - 5;
     testY = dest.y + BRICK_HEIGHT - 10;
 
-    if ((collision_type = isCollision(testX, dest.y)) || (collision_type = isCollision(testX, testY))) {
+    if ((collision_type = is_collision(testX, dest.y)) || (collision_type = is_collision(testX, testY))) {
         if (collision_type == 7) { return; } // Tile 7 = lava, if you're in it, stay in it
         if (collision_type == 6) { dead(); return; } // Tile 6 = left facing spikes
         dest.x -= MOVERL;
-    } else if ((collision_type = isCollision(ninja_world_x, dest.y)) || (collision_type = isCollision(ninja_world_x, testY))) {
+    } else if ((collision_type = is_collision(ninja_world_x, dest.y)) || (collision_type = is_collision(ninja_world_x, testY))) {
         if (collision_type == 7) { return; } // Tile 7 = lava, if you're in it, stay in it
         if (collision_type == 8) {  dead(); return; } // Tile 8 = right facing spikes
         dest.x += MOVERL;
@@ -117,19 +117,19 @@ void killenemy() {
     const bbox sattackBox = { spdest.x, spdest.y, 30, 33 };
 
     for (int i = 0; i < enemymax; i++) {/*checks for each enemy*/
-        if (nmy[i].nmy_alive == 0) { continue; } /*don't recheck the dead*/
+        if (enemies[i].is_alive == 0) { continue; } /*don't recheck the dead*/
 
-        const bbox enemyBox = { nmy[i].nmydest.x, nmy[i].nmydest.y, 60, 80 };
+        const bbox enemyBox = { enemies[i].dest.x, enemies[i].dest.y, 60, 80 };
 
-        if (attack && bbox_col(enemyBox, attackBox)) { // Sword attack
-            nmy[i].nmy_alive = 0;
+        if (attack && bbox_collision(enemyBox, attackBox)) { // Sword attack
+            enemies[i].is_alive = 0;
             score += 10;
-            nmy[i].nmy_deathtype = BYSWORD;
-            nmy[i].nmy_death_counter = 25; // how bloody is the death?
-        } else if (sattack && bbox_col(enemyBox, sattackBox)) { // Star attack
-            nmy[i].nmy_alive = 0;
-            nmy[i].nmy_deathtype = BYSTAR;
-            nmy[i].nmy_death_counter = 10; // how bloody is the death?
+            enemies[i].death_type = BYSWORD;
+            enemies[i].death_bleed_counter = 25; // how bloody is the death?
+        } else if (sattack && bbox_collision(enemyBox, sattackBox)) { // Star attack
+            enemies[i].is_alive = 0;
+            enemies[i].death_type = BYSTAR;
+            enemies[i].death_bleed_counter = 10; // how bloody is the death?
             score += 5; // small refund for star kills
             sattack = 0;
             if (!attack) { return; } // no more stars, and no sword out, don't bother checking anything else

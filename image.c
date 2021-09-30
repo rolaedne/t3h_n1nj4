@@ -12,33 +12,7 @@
     const Uint32 amask = 0xff000000;
 #endif
 
-SDL_Surface* copySurface(SDL_Surface *surface) {
-    if (surface == NULL) { return NULL; }
-    SDL_Surface *copy = SDL_ConvertSurface(surface, surface->format, 0); // don't pollute the original
-    SDL_SetAlpha(copy, 0, SDL_ALPHA_OPAQUE); // copying with transparent pixels doesn't work how you'd expect!
-    SDL_Surface *new_copy = createSurface(surface->w, surface->h);
-    SDL_BlitSurface(copy, NULL, new_copy, NULL);
-    SDL_FreeSurface(copy);
-    return new_copy;
-}
-
-SDL_Surface *loadImageRGBA(const char *filename) {
-    if (filename == NULL) { fprintf(stderr, "loadImageRGBA() called with NULL filename\n"); exit(1); }
-
-    SDL_Surface *temp = IMG_Load(filename);
-    if (temp == NULL) { fprintf(stderr, "Error loading image \"%s\": %s\n", filename, IMG_GetError()); exit(2); }
-
-    SDL_Surface *image = copySurface(temp);
-    SDL_FreeSurface(temp);
-
-    return image;
-}
-
-SDL_Surface* loadImageAsSurface(const char* filename) {
-    return loadImageRGBA(filename);
-}
-
-SDL_Surface *createSurface(const unsigned int width, const unsigned int height) {
+SDL_Surface *create_rgba_surface(const unsigned int width, const unsigned int height) {
     SDL_Surface *surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, rmask, gmask, bmask, amask);
     if (surface == NULL) {
         fprintf(stderr, "SDL_CreateRGBSurface failed: %s\n", SDL_GetError());
@@ -47,17 +21,39 @@ SDL_Surface *createSurface(const unsigned int width, const unsigned int height) 
     return surface;
 }
 
-void freeSurface(SDL_Surface **surface) {
+SDL_Surface* copy_to_rgba_surface(SDL_Surface *surface) {
+    if (surface == NULL) { return NULL; }
+    SDL_Surface *original_copy = SDL_ConvertSurface(surface, surface->format, 0); // don't pollute the original
+    SDL_SetAlpha(original_copy, 0, SDL_ALPHA_OPAQUE); // copying with transparent pixels doesn't work how you'd expect!
+    SDL_Surface *rgba_copy = create_rgba_surface(surface->w, surface->h);
+    SDL_BlitSurface(original_copy, NULL, rgba_copy, NULL);
+    SDL_FreeSurface(original_copy);
+    return rgba_copy;
+}
+
+SDL_Surface* load_image_as_rgba(const char* filename) {
+    if (filename == NULL) { fprintf(stderr, "load_image_as_rgba() called with NULL filename\n"); exit(1); }
+
+    SDL_Surface *temp = IMG_Load(filename);
+    if (temp == NULL) { fprintf(stderr, "Error loading image \"%s\": %s\n", filename, IMG_GetError()); exit(2); }
+
+    SDL_Surface *image = copy_to_rgba_surface(temp);
+    SDL_FreeSurface(temp);
+
+    return image;
+}
+
+void free_surface(SDL_Surface **surface) {
     if (*(surface) != NULL) {
         SDL_FreeSurface(*(surface));
     }
     *(surface) = NULL;
 }
 
-SDL_Surface* mirrorSurface(SDL_Surface *surface) {
+SDL_Surface* mirror_surface(SDL_Surface *surface) {
     if (surface == NULL) { return NULL; }
 
-    SDL_Surface* copy = copySurface(surface);
+    SDL_Surface* copy = copy_to_rgba_surface(surface);
 
     if (SDL_MUSTLOCK(copy)) { SDL_LockSurface(copy); }
 
