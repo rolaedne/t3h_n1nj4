@@ -25,15 +25,12 @@ void killplayer(int i) {
 }
 
 void nmy_spwn(int i) {
-    /***********************************
-     *spawns enemies on screen
-     *only when really on screen.
-     ***********************************/
     enemy *e = &nmy[i];
     const int right_edge = e->nmydest.x + (BRICK_WIDTH * 2);
     if ((e->nmydest.x - wrldps.x) < SCREENWIDTH && right_edge > 0) {/*if enemy is alive draw him on screen*/
         if (e->nmy_alive) {
             e->onscreen = 1;
+            e->flipped = (e->nmydest.x < dest.x); // living enemies should face the player
             SDL_Surface *enemy_surface = e->flipped ? e->enemies_flipped[e->nmyani] : e->enemies[e->nmyani];
             SDL_BlitSurface(enemy_surface, NULL, screen, &e->nmydest);
         } else {
@@ -160,7 +157,6 @@ void enemyai() {
     for (i = 0; i < enemymax; i++) {
         enemy *e = &nmy[i];
         nmy_physics(i);
-        if (e->nmy_alive) { e->flipped = (e->nmydest.x < dest.x); } // living enemies should face the player
         nmy_spwn(i);
         killplayer(i);
         enemyanimation(i);
@@ -215,6 +211,7 @@ void enemyanimation(int i) {
     enemy *e = &nmy[i];
     if (e->nmydly-- <= 0) {
         e->nmydly = NMYDLY;
-        if (e->enemies[++e->nmyani] == NULL) { e->nmyani = 0; }
+        e->nmyani++;
+        if (e->nmyani >= NMY_FRAMES || e->enemies[e->nmyani] == NULL) { e->nmyani = 0; }
     }
 }
