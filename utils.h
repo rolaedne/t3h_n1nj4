@@ -13,13 +13,6 @@ typedef enum {
 
 int bRand(int min, int max);
 
-void freeSurface(SDL_Surface **surface);
-
-int twoblock_col(
-    const int bb1x, const int bb1y, const int bb1w, const int bb1h,
-    const int bb2x, const int bb2y, const int bb2w, const int bb2h
-);
-
 int delayMsNoSkip(const unsigned int msToDelay);
 int delayMs(const unsigned int);
 

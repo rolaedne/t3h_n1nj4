@@ -92,17 +92,16 @@ void buildw() {
      *leght of world
      *then world layout using the below world format
      ***************************************************/
-    int i, t, x;
     char lvlname[50];
     FILE* world_file;
 
     printf("DEBUG: buildw()\n");
     /* free the memory used by world, if any*/
     freeSurface(&background);
-    for(i = 0; i < NMY; ++i) {
+    for(int i = 0; i < NMY; ++i) {
         nmy[i].onscreen = 0;
-        for(x = 0; x < NMY_FRAMES; ++x) freeSurface(&nmy[i].enemies[x]);
-        for(x = 0; x < NMY_DEATHS; ++x) freeSurface(&nmy[i].deaths[x]);
+        for(int x = 0; x < NMY_FRAMES; ++x) { freeSurface(&nmy[i].enemies[x]); freeSurface(&nmy[i].enemies_flipped[x]); }
+        for(int x = 0; x < NMY_DEATHS; ++x) { freeSurface(&nmy[i].deaths[x]); freeSurface(&nmy[i].deaths_flipped[x]); }
     }
     clearParticles();
 
@@ -114,8 +113,8 @@ void buildw() {
      *********************************************/
 
     /*initialises game world to all zeros*/
-    for (i = 0; i < WORLD_COLS; i++) {
-        for (t = 0; t < WORLD_ROWS; t++) {
+    for (int i = 0; i < WORLD_COLS; i++) {
+        for (int t = 0; t < WORLD_ROWS; t++) {
             world[t][i] = 0;
         }
     }
@@ -137,7 +136,7 @@ void buildw() {
     dest.y = 80 * 4;
 
     /*initialises alive loop for enemies*/
-    for (i = 0; i < NMY; i++) {
+    for (int i = 0; i < NMY; i++) {
         nmy[i].nmy_alive = 0;
     }
 
@@ -153,10 +152,11 @@ void buildw() {
         exit(EXIT_SUCCESS);
     }
 
+    int x;
     fscanf(world_file, "%d", &x);
 
     enemymax = x; /*set max amount of enemies*/
-    for (i = 0; i < NMY && i < enemymax; i++) {/*set enemy destinations from file*/
+    for (int i = 0; i < NMY && i < enemymax; i++) {/*set enemy destinations from file*/
         fscanf(world_file, "%d", &x);
         nmy[i].nmytype = x;
         fscanf(world_file, "%d", &x);
@@ -164,6 +164,12 @@ void buildw() {
         fscanf(world_file, "%d", &x);
         nmy[i].nmydest.y = x*BRICK_HEIGHT;
         nmy[i].nmy_alive = 1;
+        nmy[i].jmpon = 0;
+        nmy[i].flipped = 0;
+        nmy[i].nmyani = 0; /*what animation frame to start on*/
+        nmy[i].nmydly = 0; /*used to count in a delay funt*/
+        nmy[i].onscreen = 0;
+
         /* TODO: Move enemy information out of code and into data files. */
         if (nmy[i].nmytype == 0) {/*enemy type 0s quality*/
             nmy[i].enemies[0] = loadImageAsSurface("chars/turco0.png");
@@ -174,22 +180,16 @@ void buildw() {
             nmy[i].deaths[BYSTAR] = loadImageAsSurface("chars/turco3.png");
             nmy[i].deaths[BYLAVA] = loadImageAsSurface("chars/turco4.png");
 
-            nmy[i].nmyani = 0; /*what animation frame to start on*/
-            nmy[i].nmyanilen = 1; /*home many animations that is zero based*/
             nmy[i].jmp = -40;
             nmy[i].speed = 4;
-            nmy[i].jmpon = 0;
         } else if (nmy[i].nmytype == 1) {
             nmy[i].enemies[0] = loadImageAsSurface("chars/one0.png");
             nmy[i].enemies[1] = loadImageAsSurface("chars/one1.png");
             nmy[i].enemies[2] = loadImageAsSurface("chars/one2.png");
             nmy[i].enemies[3] = loadImageAsSurface("chars/one3.png");
 
-            nmy[i].nmyani = 0; /*what animation frame to start on*/
-            nmy[i].nmyanilen = 3; /*home many animations that is zero based*/
             nmy[i].jmp = -45;
             nmy[i].speed = 5;
-            nmy[i].jmpon = 0;
         } else if (nmy[i].nmytype == 2) {
             nmy[i].enemies[0] = loadImageAsSurface("chars/rninja0.png");
             nmy[i].enemies[1] = loadImageAsSurface("chars/rninja1.png");
@@ -198,18 +198,13 @@ void buildw() {
             nmy[i].enemies[4] = loadImageAsSurface("chars/rninja4.png");
             nmy[i].enemies[5] = loadImageAsSurface("chars/rninja5.png");
 
-            nmy[i].nmyani = 0; /*what animation frame to start on*/
-            nmy[i].nmyanilen = 4; /*home many animations that is zero based*/
             nmy[i].jmp = -55;
             nmy[i].speed = 8;
-            nmy[i].jmpon = 0;
         }
-    }
 
-    nmy[i].nmydly = 0; /*used to count in a delay funt*/
-    nmy[i].onscreen = 0;
-    i = 0;
-    t = 5;
+        for (int f = 0; f < NMY_FRAMES; ++f) { nmy[i].enemies_flipped[f] = mirrorSurface(nmy[i].enemies[f]); }
+        for (int f = 0; f < NMY_DEATHS; ++f) { nmy[i].deaths_flipped[f] = mirrorSurface(nmy[i].deaths[f]); }
+    }
 
     fscanf(world_file, "%d", &x);
     world_length = x;
@@ -246,6 +241,9 @@ void buildw() {
     //sprintf(lvlname, "lvl/foreground%d.png", worldnum);
     //foreground = NULL; //loadImageAsSurface(lvlname);
 
+
+    int i = 0;
+    int t = 5;
     while (!feof(world_file)) {/*creates game world from frile*/
         fscanf(world_file, "%d", &x);
         if (t == -1) {
@@ -259,6 +257,7 @@ void buildw() {
 }
 
 void set_screen() {
+    printf("DEBUG: set_screen()\n");
     int i, t;
     const int world_height = 6;
     /*******************************************
@@ -266,7 +265,6 @@ void set_screen() {
      *game board to be displayed on the screen
      ********************************************/
 
-    printf("DEBUG: set_screen()\n");
     SDL_BlitSurface(background, &wrldps, screen, NULL);
 
     /* TODO: Move tile information out of code and into data files. */

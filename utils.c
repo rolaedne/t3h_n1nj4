@@ -10,21 +10,6 @@ int bRand(const int min, const int max) {
     return random;
 }
 
-
-void freeSurface(SDL_Surface **surface) {
-    if (*(surface) != NULL) {
-        SDL_FreeSurface(*(surface));
-    }
-    *(surface) = NULL;
-}
-
-int bbox_col(bbox box1, bbox box2) {
-    return twoblock_col(
-        box1.x, box1.y, box1.w, box1.h,
-        box2.x, box2.y, box2.w, box2.h
-    );
-}
-
 int twoblock_col(
     const int bb1x, const int bb1y, const int bb1w, const int bb1h,
     const int bb2x, const int bb2y, const int bb2w, const int bb2h
@@ -49,6 +34,13 @@ int twoblock_col(
         if (bb1y <= bb2y + bb2h && bb2y + bb2h <= bb1y + bb1h)
             return 1;
     return 0;
+}
+
+int bbox_col(bbox box1, bbox box2) {
+    return twoblock_col(
+        box1.x, box1.y, box1.w, box1.h,
+        box2.x, box2.y, box2.w, box2.h
+    );
 }
 
 BOOLEAN skippable = TRUE;

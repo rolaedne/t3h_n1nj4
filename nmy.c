@@ -15,19 +15,13 @@
 #include "utils.h"
 #include "screens.h"
 
+// Takes care of case if enemy hands touch ninja. you will make with the dead.
 void killplayer(int i) {
-    if (isDead) { return; } // don't kill the player if they're already dead
-    /**************************************
-     *Takes care of case if enemy hands touch
-     *ninja. you will make with the dead.
-     **************************************/
-
-    /*gives some leway of yoru death*/
-    if (twoblock_col(dest.x - 5, dest.y + 5, 50, 70,
-            nmy[i].nmydest.x - 10, nmy[i].nmydest.y, 50, 50)
-            == 1 && nmy[i].nmy_alive != 0) {/*hand*/
-        dead();
-    }
+    enemy *e = &nmy[i];
+    if (isDead || !e->nmy_alive) { return; } // don't kill the player if they're already dead, and dead enemies can't hurt the player
+    bbox player_box = { dest.x - 5, dest.y + 5, 50, 70 };
+    bbox enemy_box = { e->nmydest.x - 10, e->nmydest.y, 50, 50 };
+    if (bbox_col(player_box, enemy_box)) { dead(); }
 }
 
 void nmy_spwn(int i) {
@@ -40,7 +34,11 @@ void nmy_spwn(int i) {
     if ((e->nmydest.x - wrldps.x) < SCREENWIDTH && right_edge > 0) {/*if enemy is alive draw him on screen*/
         if (e->nmy_alive) {
             e->onscreen = 1;
-            SDL_BlitSurface(e->enemies[e->nmyani], NULL, screen, &e->nmydest);
+            if (e->flipped) {
+                SDL_BlitSurface(e->enemies_flipped[e->nmyani], NULL, screen, &e->nmydest);
+            } else {
+                SDL_BlitSurface(e->enemies[e->nmyani], NULL, screen, &e->nmydest);
+            }
         } else {
             if (e->nmytype == 0) {
                 e->onscreen = 1;
@@ -53,7 +51,11 @@ void nmy_spwn(int i) {
                         e->nmy_death_counter--;
                     }
                 }
-                SDL_BlitSurface(e->deaths[e->nmy_deathtype], NULL, screen, &e->nmydest);
+                if (e->flipped) {
+                    SDL_BlitSurface(e->deaths_flipped[e->nmy_deathtype], NULL, screen, &e->nmydest);
+                } else {
+                    SDL_BlitSurface(e->deaths[e->nmy_deathtype], NULL, screen, &e->nmydest);
+                }
                 e->nmydest.x = old_x;
                 e->nmydest.y = old_y;
             }
@@ -165,7 +167,9 @@ void enemyai() {
     int i, t;
 
     for (i = 0; i < enemymax; i++) {
+        enemy *e = &nmy[i];
         nmy_physics(i);
+        if (e->nmy_alive) { e->flipped = (e->nmydest.x < dest.x); } // living enemies should face the player
         nmy_spwn(i);
         killplayer(i);
         enemyanimation(i);
@@ -217,18 +221,12 @@ void enemyai() {
 }
 
 void enemyanimation(int i) {
-    /************************************************
-     *Will run through the different enemy animations
-     *The delay in set in a define at the top of this
-     *file
-     ***********************************************/
-    if (nmy[i].nmydly == 0) {
-        nmy[i].nmydly = NMYDLY;
-        nmy[i].nmyani++;
-        if (nmy[i].nmyani > nmy[i].nmyanilen) {
-            nmy[i].nmyani = 0;
+    enemy *e = &nmy[i];
+    if (e->nmydly-- <= 0) {
+        e->nmydly = NMYDLY;
+        e->nmyani++;
+        if (e->enemies[e->nmyani] == NULL) {
+            e->nmyani = 0;
         }
-    } else {
-        nmy[i].nmydly--;
     }
 }

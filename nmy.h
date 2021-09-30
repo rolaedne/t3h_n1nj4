@@ -27,8 +27,10 @@ typedef struct {
   *what or whom an enemy is
   *what qualities really make up an enemy
   *******************************************/
-    SDL_Surface *enemies[6]; /*frames of animation*/
-    SDL_Surface *deaths[3]; /*death frames*/
+    SDL_Surface *enemies[NMY_FRAMES]; /*frames of animation*/
+    SDL_Surface *enemies_flipped[NMY_FRAMES]; /*frames of animation*/
+    SDL_Surface *deaths[NMY_DEATHS]; /*death frames*/
+    SDL_Surface *deaths_flipped[NMY_DEATHS]; /*death frames*/
     SDL_Rect nmydest;
     int nmy_deathtype;
     int nmy_death_counter;
@@ -42,6 +44,7 @@ typedef struct {
     int jmpon;/*are they jumping/*/
     int jmp;/*how high enemies jump*/
     int speed;/*how fast an enemy moves*/
+    int flipped;
 } enemy;
 
 enemy nmy[NMY];
