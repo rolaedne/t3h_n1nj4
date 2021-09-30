@@ -445,7 +445,6 @@ void dead() {
         delayWait -= MSECS_PER_FRAME;
     }
 
-    printf("DEBUG: done looking\n");
     SDL_Rect corpse_dest = { 395, 295, 0, 0 };
     SDL_Rect corpse_src = { 300, 0, 60, 80 };
     SDL_Surface *death_screen = loadImageAsSurface("lvl/dead.png");

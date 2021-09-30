@@ -34,28 +34,19 @@ void nmy_spwn(int i) {
     if ((e->nmydest.x - wrldps.x) < SCREENWIDTH && right_edge > 0) {/*if enemy is alive draw him on screen*/
         if (e->nmy_alive) {
             e->onscreen = 1;
-            if (e->flipped) {
-                SDL_BlitSurface(e->enemies_flipped[e->nmyani], NULL, screen, &e->nmydest);
-            } else {
-                SDL_BlitSurface(e->enemies[e->nmyani], NULL, screen, &e->nmydest);
-            }
+            SDL_Surface *enemy_surface = e->flipped ? e->enemies_flipped[e->nmyani] : e->enemies[e->nmyani];
+            SDL_BlitSurface(enemy_surface, NULL, screen, &e->nmydest);
         } else {
-            if (e->nmytype == 0) {
+            SDL_Surface *death_surface = e->flipped ? e->deaths_flipped[e->nmy_deathtype] : e->deaths[e->nmy_deathtype];
+            if (death_surface != NULL) {
                 e->onscreen = 1;
-                int old_x, old_y;
-                old_x = e->nmydest.x;
-                old_y = e->nmydest.y;
-                if (e->nmy_deathtype == BYSWORD || e->nmy_deathtype == BYSTAR) {
-                    if (e->nmy_death_counter > 0 || rand() % 75 == 0) {
-                        blood(e->nmydest);
-                        e->nmy_death_counter--;
-                    }
+                if (e->nmy_death_counter > 0 || rand() % 75 == 0) {
+                    blood(e->nmydest);
+                    e->nmy_death_counter--;
                 }
-                if (e->flipped) {
-                    SDL_BlitSurface(e->deaths_flipped[e->nmy_deathtype], NULL, screen, &e->nmydest);
-                } else {
-                    SDL_BlitSurface(e->deaths[e->nmy_deathtype], NULL, screen, &e->nmydest);
-                }
+                const int old_x = e->nmydest.x; // drawing off the edge of a surface (screen) will clip the dest rect
+                const int old_y = e->nmydest.y; // TODO: x, y shouldn't be in an SDL_Rect directly used to draw
+                SDL_BlitSurface(death_surface, NULL, screen, &e->nmydest);
                 e->nmydest.x = old_x;
                 e->nmydest.y = old_y;
             }
@@ -224,9 +215,6 @@ void enemyanimation(int i) {
     enemy *e = &nmy[i];
     if (e->nmydly-- <= 0) {
         e->nmydly = NMYDLY;
-        e->nmyani++;
-        if (e->enemies[e->nmyani] == NULL) {
-            e->nmyani = 0;
-        }
+        if (e->enemies[++e->nmyani] == NULL) { e->nmyani = 0; }
     }
 }
