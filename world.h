@@ -28,6 +28,7 @@ SDL_Surface *screen;
 SDL_Surface *background;
 SDL_Surface *foreground;
 SDL_Surface *number, *wscore; // for score UI
+SDL_Surface *blood1;
 SDL_Rect wrldps;
 int worldnum;
 int enemymax;

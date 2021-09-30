@@ -45,11 +45,11 @@ void graphics_load() {
     number = load_image_as_rgba("lvl/number.png");
     blood1 = load_image_as_rgba("bloods/blood4.png");
     snow = load_image_as_rgba("bloods/snow.png");
-    sweapon1_1 = load_image_as_rgba("weapons/star1.png");
-    sweapon1_2 = load_image_as_rgba("weapons/star2.png");
+    player.sweapon1_1 = load_image_as_rgba("weapons/star1.png");
+    player.sweapon1_2 = load_image_as_rgba("weapons/star2.png");
 
     /*inits some world images*/
-    ninja = load_image_as_rgba("chars/ninja.new2.png");
+    player.ninja = load_image_as_rgba("chars/ninja.new2.png");
 
     worldfloor = load_image_as_rgba("lvl/floor.png");
     worldbrick[0] = load_image_as_rgba("lvl/brick0.png");
@@ -72,9 +72,9 @@ void graphics_free() {
     free_surface(&number);
     free_surface(&blood1);
     free_surface(&snow);
-    free_surface(&sweapon1_1);
-    free_surface(&sweapon1_2);
-    free_surface(&ninja);
+    free_surface(&player.sweapon1_1);
+    free_surface(&player.sweapon1_2);
+    free_surface(&player.ninja);
     free_surface(&worldfloor);
 
     for(i = 0; i < BRICKS_WORLD; ++i) free_surface(&worldbrick[i]);
@@ -99,9 +99,10 @@ void load_current_world_from_file() {
     /* free the memory used by world, if any*/
     free_surface(&background);
     for(int i = 0; i < NMY; ++i) {
-        enemies[i].is_visible = 0;
-        for(int x = 0; x < NMY_FRAMES; ++x) { free_surface(&enemies[i].anim_frames[x]); free_surface(&enemies[i].anim_frames_flipped[x]); }
-        for(int x = 0; x < NMY_DEATHS; ++x) { free_surface(&enemies[i].death_frames[x]); free_surface(&enemies[i].death_frames_flipped[x]); }
+        enemy *e = &enemies[i];
+        e->is_visible = 0;
+        for(int x = 0; x < NMY_FRAMES; ++x) { free_surface(&e->anim_frames[x]); free_surface(&e->anim_frames_flipped[x]); }
+        for(int x = 0; x < NMY_DEATHS; ++x) { free_surface(&e->death_frames[x]); free_surface(&e->death_frames_flipped[x]); }
     }
     clear_particles();
 
@@ -125,20 +126,17 @@ void load_current_world_from_file() {
     wrldps.h = 480;
 
     /*inits ninja image*/
-    ninja_src.y = 80;
-    ninja_src.x = 180;
-    ninja_src.w = 60;
-    ninja_src.h = 80;
-
+    player.ninja_src.y = 80;
+    player.ninja_src.x = 180;
+    player.ninja_src.w = 60;
+    player.ninja_src.h = 80;
 
     /*ninja start positison*/
-    dest.x = 0;
-    dest.y = 80 * 4;
+    player.dest.x = 0;
+    player.dest.y = 80 * 4;
 
     /*initialises alive loop for enemies*/
-    for (int i = 0; i < NMY; i++) {
-        enemies[i].is_alive = 0;
-    }
+    for (int i = 0; i < NMY; i++) { enemies[i].is_alive = 0; }
 
     /*world file to be used*/
 
@@ -157,59 +155,60 @@ void load_current_world_from_file() {
 
     enemymax = x; /*set max amount of enemies*/
     for (int i = 0; i < NMY && i < enemymax; i++) {/*set enemy destinations from file*/
+        enemy *e = &enemies[i];
         fscanf(world_file, "%d", &x);
-        enemies[i].type = x;
+        e->type = x;
         fscanf(world_file, "%d", &x);
-        enemies[i].dest.x = x*BRICK_WIDTH;
+        e->dest.x = x*BRICK_WIDTH;
         fscanf(world_file, "%d", &x);
-        enemies[i].dest.y = x*BRICK_HEIGHT;
-        enemies[i].is_alive = 1;
-        enemies[i].jump_is_active = 0;
-        enemies[i].is_flipped = 0;
-        enemies[i].anim_frame = 0; /*what animation frame to start on*/
-        enemies[i].anim_delay = 0; /*used to count in a delay funt*/
-        enemies[i].is_visible = 0;
+        e->dest.y = x*BRICK_HEIGHT;
+        e->is_alive = 1;
+        e->jump_is_active = 0;
+        e->is_flipped = 0;
+        e->anim_frame = 0; /*what animation frame to start on*/
+        e->anim_delay = 0; /*used to count in a delay funt*/
+        e->is_visible = 0;
 
         /* TODO: Move enemy information out of code and into data files. */
-        if (enemies[i].type == 0) {/*enemy type 0s quality*/
-            enemies[i].anim_frames[0] = load_image_as_rgba("chars/turco0.png");
-            enemies[i].anim_frames[1] = load_image_as_rgba("chars/turco1.png");
+        if (e->type == 0) {/*enemy type 0s quality*/
+            e->anim_frames[0] = load_image_as_rgba("chars/turco0.png");
+            e->anim_frames[1] = load_image_as_rgba("chars/turco1.png");
 
             /*death image, sword,*/
-            enemies[i].death_frames[BYSWORD] = load_image_as_rgba("chars/turco2.png");
-            enemies[i].death_frames[BYSTAR] = load_image_as_rgba("chars/turco3.png");
-            enemies[i].death_frames[BYLAVA] = load_image_as_rgba("chars/ashes.png");
+            e->death_frames[BYSWORD] = load_image_as_rgba("chars/turco2.png");
+            e->death_frames[BYSTAR] = load_image_as_rgba("chars/turco3.png");
+            e->death_frames[BYLAVA] = load_image_as_rgba("chars/ashes.png");
 
-            enemies[i].jump_strength = -40;
-            enemies[i].speed = 4;
-        } else if (enemies[i].type == 1) {
-            enemies[i].anim_frames[0] = load_image_as_rgba("chars/one0.png");
-            enemies[i].anim_frames[1] = load_image_as_rgba("chars/one1.png");
-            enemies[i].anim_frames[2] = load_image_as_rgba("chars/one2.png");
-            enemies[i].anim_frames[3] = load_image_as_rgba("chars/one3.png");
-            enemies[i].death_frames[BYSWORD] = load_image_as_rgba("chars/one_sword_death.png");
-            enemies[i].death_frames[BYSTAR] = load_image_as_rgba("chars/one_star_death.png");
-            enemies[i].death_frames[BYLAVA] = load_image_as_rgba("chars/ashes.png");
+            e->jump_strength = -40;
+            e->speed = 4;
+        } else if (e->type == 1) {
+            e->anim_frames[0] = load_image_as_rgba("chars/one0.png");
+            e->anim_frames[1] = load_image_as_rgba("chars/one1.png");
+            e->anim_frames[2] = load_image_as_rgba("chars/one2.png");
+            e->anim_frames[3] = load_image_as_rgba("chars/one3.png");
+            e->death_frames[BYSWORD] = load_image_as_rgba("chars/one_sword_death.png");
+            e->death_frames[BYSTAR] = load_image_as_rgba("chars/one_star_death.png");
+            e->death_frames[BYLAVA] = load_image_as_rgba("chars/ashes.png");
 
-            enemies[i].jump_strength = -45;
-            enemies[i].speed = 5;
-        } else if (enemies[i].type == 2) {
-            enemies[i].anim_frames[0] = load_image_as_rgba("chars/rninja0.png");
-            enemies[i].anim_frames[1] = load_image_as_rgba("chars/rninja1.png");
-            enemies[i].anim_frames[2] = load_image_as_rgba("chars/rninja2.png");
-            enemies[i].anim_frames[3] = load_image_as_rgba("chars/rninja3.png");
-            enemies[i].anim_frames[4] = load_image_as_rgba("chars/rninja4.png");
-            enemies[i].anim_frames[5] = load_image_as_rgba("chars/rninja5.png");
-            enemies[i].death_frames[BYSWORD] = load_image_as_rgba("chars/rninja_sword_death.png");
-            enemies[i].death_frames[BYSTAR] = load_image_as_rgba("chars/rninja_star_death.png");
-            enemies[i].death_frames[BYLAVA] = load_image_as_rgba("chars/ashes.png");
+            e->jump_strength = -45;
+            e->speed = 5;
+        } else if (e->type == 2) {
+            e->anim_frames[0] = load_image_as_rgba("chars/rninja0.png");
+            e->anim_frames[1] = load_image_as_rgba("chars/rninja1.png");
+            e->anim_frames[2] = load_image_as_rgba("chars/rninja2.png");
+            e->anim_frames[3] = load_image_as_rgba("chars/rninja3.png");
+            e->anim_frames[4] = load_image_as_rgba("chars/rninja4.png");
+            e->anim_frames[5] = load_image_as_rgba("chars/rninja5.png");
+            e->death_frames[BYSWORD] = load_image_as_rgba("chars/rninja_sword_death.png");
+            e->death_frames[BYSTAR] = load_image_as_rgba("chars/rninja_star_death.png");
+            e->death_frames[BYLAVA] = load_image_as_rgba("chars/ashes.png");
 
-            enemies[i].jump_strength = -55;
-            enemies[i].speed = 8;
+            e->jump_strength = -55;
+            e->speed = 8;
         }
 
-        for (int f = 0; f < NMY_FRAMES; ++f) { enemies[i].anim_frames_flipped[f] = mirror_surface(enemies[i].anim_frames[f]); }
-        for (int f = 0; f < NMY_DEATHS; ++f) { enemies[i].death_frames_flipped[f] = mirror_surface(enemies[i].death_frames[f]); }
+        for (int f = 0; f < NMY_FRAMES; ++f) { e->anim_frames_flipped[f] = mirror_surface(e->anim_frames[f]); }
+        for (int f = 0; f < NMY_DEATHS; ++f) { e->death_frames_flipped[f] = mirror_surface(e->death_frames[f]); }
     }
 
     fscanf(world_file, "%d", &x);
@@ -223,13 +222,13 @@ void load_current_world_from_file() {
 
     SDL_FillRect(background, &dst, SDL_MapRGB(background->format, 0, 0, 0)); // black
 
-    int bandHeight = 10 + deaths + (5 * worldnum);
+    int bandHeight = 10 + player.deaths + (5 * worldnum);
     if (bandHeight > 25) bandHeight = 25;
 
     int backgroundHeight = background->h;
     int bands = backgroundHeight / bandHeight;
 
-    int startColor = 64 + (deaths * 2) + (5 * worldnum);
+    int startColor = 64 + (player.deaths * 2) + (5 * worldnum);
     if (startColor > 128) startColor = 128;
 
     int maxBaseColor = 255;
@@ -309,17 +308,17 @@ void world_mover() {
      *  This function scrolls world if person is far
      *enought along
      *************************************************/
-    if ((dest.x + wrldps.x + (SCREENWIDTH / 2))>(BRICK_WIDTH * world_length)) {/*can't scroll anymore to the right*/
-        if ((dest.x + wrldps.x + 25)>(BRICK_WIDTH * world_length)) {/*reached the end of the screen*/
+    if ((player.dest.x + wrldps.x + (SCREENWIDTH / 2))>(BRICK_WIDTH * world_length)) {/*can't scroll anymore to the right*/
+        if ((player.dest.x + wrldps.x + 25)>(BRICK_WIDTH * world_length)) {/*reached the end of the screen*/
             worldnum++;
             load_current_world_from_file(); // Doesn't take worldnum as a parameter
         }
-    } else if (dest.x > SCREENWIDTH / 2) {/*moves screen if past half screen lenght*/
-        dest.x = SCREENWIDTH / 2;
+    } else if (player.dest.x > SCREENWIDTH / 2) {/*moves screen if past half screen lenght*/
+        player.dest.x = SCREENWIDTH / 2;
         wrldps.x += MOVERL;
         for (i = 0; i < enemymax; i++) { enemies[i].dest.x -= MOVERL; }
-    } else if (dest.x < 0) {/*can't run off the left side*/
-        dest.x = 0;
+    } else if (player.dest.x < 0) {/*can't run off the left side*/
+        player.dest.x = 0;
     }
 }
 

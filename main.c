@@ -43,16 +43,16 @@ int main() {
     show_start_screen();
 
     /*init variables*/
-    score = 100; /*start w/ 100 points since stars take poaints*/
-    deaths = 0;
-    attacklen = 0;
-    jump = 0;
-    gravity_compound = 0;
+    player.score = 100; /*start w/ 100 points since stars take poaints*/
+    player.deaths = 0;
+    player.attacklen = 0;
+    player.jump = 0;
+    player.gravity_compound = 0;
     worldnum = 0; /*set world number initially*/
     graphics_load();
     load_current_world_from_file(); /*builds the world*/
 
-    //SDL_BlitSurface(ninja, &ninja_src, screen, &dest);
+    //SDL_BlitSurface(ninja, &player.ninja_src, screen, &dest);
     //update_screen();
 
     int skipLevel = 0;
@@ -74,33 +74,33 @@ int main() {
                     special();
                 }
                 if (keys[SDLK_LEFT]) {
-                    dest.x -= MOVERL;
+                    player.dest.x -= MOVERL;
                     // frame 1 and 2 of the walking animation
-                    // TODO: encapsulate this sort of logic (direct manipulation of ninja_src) in the plyr code itself
-                    if (ninja_src.x == 60) {
-                        ninja_src.x = 0;
+                    // TODO: encapsulate this sort of logic (direct manipulation of player.ninja_src) in the plyr code itself
+                    if (player.ninja_src.x == 60) {
+                        player.ninja_src.x = 0;
                     } else {
-                        ninja_src.x = 60;
+                        player.ninja_src.x = 60;
                     }
                 }
                 if (keys[SDLK_RIGHT]) {
-                    dest.x += MOVERL;
-                    if (ninja_src.x == 240) {
-                        ninja_src.x = 300;
+                    player.dest.x += MOVERL;
+                    if (player.ninja_src.x == 240) {
+                        player.ninja_src.x = 300;
                     } else {
-                        ninja_src.x = 240;
+                        player.ninja_src.x = 240;
                     }
                 }
                 if (keys[SDLK_UP]) {
-                    if (jump == 0) {
-                        jump = 1;
-                        gravity_compound = JUMPMAX;
+                    if (player.jump == 0) {
+                        player.jump = 1;
+                        player.gravity_compound = JUMPMAX;
                     }
                 }
                 if (keys[SDLK_SPACE]) {
-                    ninja_src.y = 160;
-                    if (attack == 0) {
-                        attack = ATTLEN;
+                    player.ninja_src.y = 160;
+                    if (player.attack == 0) {
+                        player.attack = ATTLEN;
                     }
                 }
                 break;
@@ -109,30 +109,30 @@ int main() {
                     skipLevel = 2;
                     break;
                 }
-                if (ninja_src.x >= 180) {
-                    ninja_src.x = 180;
+                if (player.ninja_src.x >= 180) {
+                    player.ninja_src.x = 180;
                 } else {
-                    ninja_src.x = 120;
+                    player.ninja_src.x = 120;
                 }
 
                 if (keys[SDLK_LEFT]) {
-                    dest.x -= MOVERL;
+                    player.dest.x -= MOVERL;
                     if (tmp_ps == 0) {
                         tmp_ps = 1;
-                        ninja_src.x = 0;
+                        player.ninja_src.x = 0;
                     } else {
                         tmp_ps = 0;
-                        ninja_src.x = 60;
+                        player.ninja_src.x = 60;
                     }
                 }
                 if (keys[SDLK_RIGHT]) {
-                    dest.x += MOVERL;
+                    player.dest.x += MOVERL;
                     if (tmp_ps == 0) {
                         tmp_ps = 1;
-                        ninja_src.x = 300;
+                        player.ninja_src.x = 300;
                     } else {
                         tmp_ps = 0;
-                        ninja_src.x = 240;
+                        player.ninja_src.x = 240;
                     }
                 }
 
@@ -144,28 +144,28 @@ int main() {
             load_current_world_from_file();
             skipLevel = 0;
         }
-        if (jump != 0) {
-            ninja_src.y = 0;
-            if (ninja_src.x >= 180) {
-                ninja_src.x = 180;
+        if (player.jump != 0) {
+            player.ninja_src.y = 0;
+            if (player.ninja_src.x >= 180) {
+                player.ninja_src.x = 180;
             } else {
-                ninja_src.x = 120;
+                player.ninja_src.x = 120;
             }
         }
         physics();
 
         //attacking
-        if (attack != 0) {
-            if (jump != 0) {
-                if (ninja_src.x >= 180) {
-                    ninja_src.x += 60;
+        if (player.attack != 0) {
+            if (player.jump != 0) {
+                if (player.ninja_src.x >= 180) {
+                    player.ninja_src.x += 60;
                 } else {
-                    ninja_src.x -= 60;
+                    player.ninja_src.x -= 60;
                 }
             } else {
-                ninja_src.y = 160;
+                player.ninja_src.y = 160;
             }
-            attack -= 1;
+            player.attack -= 1;
             killenemy();
         } //end of attacking
 
@@ -173,7 +173,7 @@ int main() {
 
         spawn_snow_particles(); // precipitation_tick
         SDL_BlitSurface(background, &wrldps, screen, NULL); // draw_background || draw_world
-        SDL_BlitSurface(ninja, &ninja_src, screen, &dest); // draw_player
+        SDL_BlitSurface(player.ninja, &player.ninja_src, screen, &player.dest); // draw_player
         special_throw(); // special_attack_physics_tick && draw_special_attack
         enemy_ai(); // enemies_tick && draw_enemies
         draw_particles(screen);
@@ -206,7 +206,7 @@ void draw_score_ui() {
     SDL_Rect score_dest = { 10, 10 };
     SDL_BlitSurface(wscore, NULL, screen, &score_dest);
 
-    int val = score;
+    int val = player.score;
     if (val <= 0) { val = 0; }
 
     SDL_Rect wdest = { score_dest.x + wscore->w + 10 + (10 * get_length(val)), score_dest.y };
@@ -400,30 +400,30 @@ void play_intro_movie() {
 
 // Death screen
 void dead() {
-    if (isDead) { return; }
+    if (player.is_dead) { return; }
     printf("DEBUG: ya dead, boo.\n");
-    deaths += 1;
-    attack = 0;
-    isDead = TRUE;
-    score -= 10; if (score < 0) score = 0;
+    player.deaths += 1;
+    player.attack = 0;
+    player.is_dead = TRUE;
+    player.score -= 10; if (player.score < 0) player.score = 0;
 
-    SDL_Rect bloodSpawn = { dest.x, dest.y, dest.w, dest.h };
+    SDL_Rect bloodSpawn = { player.dest.x, player.dest.y, player.dest.w, player.dest.h };
     spawn_blood_particles(bloodSpawn);
 
     int vertical_accumulator = 0;
 
     int delayWait = 750; // Give the player a moment to see how they died
     while (!delay_ms_unskippable(MSECS_PER_FRAME) && delayWait > 0) {
-        ninja_src.y = 0;
-        if (ninja_src.x < 180) {
-            ninja_src.x = 0;
+        player.ninja_src.y = 0;
+        if (player.ninja_src.x < 180) {
+            player.ninja_src.x = 0;
         } else {
-            ninja_src.x = 300;
+            player.ninja_src.x = 300;
         }
         SDL_BlitSurface(background, &wrldps, screen, NULL);
-        SDL_BlitSurface(ninja, &ninja_src, screen, &dest);
-        bloodSpawn.x = dest.x;
-        bloodSpawn.y = dest.y;
+        SDL_BlitSurface(player.ninja, &player.ninja_src, screen, &player.dest);
+        bloodSpawn.x = player.dest.x;
+        bloodSpawn.y = player.dest.y;
         const int old_x = bloodSpawn.x;
         bloodSpawn.y -= vertical_accumulator++;
         spawn_blood_particles(bloodSpawn);
@@ -447,13 +447,13 @@ void dead() {
     SDL_Rect corpse_src = { 300, 0, 60, 80 };
     SDL_Surface *death_screen = load_image_as_rgba("lvl/dead.png");
     SDL_BlitSurface(death_screen, NULL, screen, NULL); /*print dead screen*/
-    SDL_BlitSurface(ninja, &corpse_src, screen, &corpse_dest);
+    SDL_BlitSurface(player.ninja, &corpse_src, screen, &corpse_dest);
     draw_score_ui();
     update_screen();
     free_surface(&death_screen);
 
-    sattack = 0;
-    isDead = FALSE;
+    player.sattack = 0;
+    player.is_dead = FALSE;
     while (!delay_ms_skippable(100));
     load_current_world_from_file();
 }
