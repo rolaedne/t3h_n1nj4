@@ -5,9 +5,6 @@
 extern "C" {
 #endif
 
-void startScreen();
-void playIntroMovie();
-void updateScreen();
 void dead();
 void winner();
 

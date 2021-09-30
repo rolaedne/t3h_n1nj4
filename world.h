@@ -34,7 +34,7 @@ int enemymax;
 
 void graphics_load();
 void graphics_free();
-void letItSnow();
+void let_it_snow();
 void blood(SDL_Rect bleed);
 void set_screen();
 void buildw();

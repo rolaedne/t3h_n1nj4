@@ -20,7 +20,7 @@ extern "C" {
 #define NMY_DEATHS 3
 #define NMY 10
 
-struct enemy {
+typedef struct {
   /******************************************
   *defines all parts of the enemies
   *can we ever really define
@@ -42,7 +42,9 @@ struct enemy {
     int jmpon;/*are they jumping/*/
     int jmp;/*how high enemies jump*/
     int speed;/*how fast an enemy moves*/
-} nmy[NMY];
+} enemy;
+
+enemy nmy[NMY];
 
 /*********************
 *keeps track of last hit object in

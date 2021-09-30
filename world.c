@@ -325,7 +325,7 @@ void world_mover() {
 }
 
 
-void letItSnow() {
+void let_it_snow() {
     int i = 0;
     do {
         int x = rand() % (640 * 2) + wrldps.x;
