@@ -23,12 +23,6 @@ SDL_Renderer *renderer;
 SDL_Texture *screen_texture;
 
 int main() {
-    /*********************************************************
-     *Main
-     *this runs the main event loop. Sets up video as well
-     *as inits images.
-     *********************************************************/
-
     if (SDL_Init(SDL_INIT_VIDEO) == -1) {
         fprintf(stderr, "Error initializing SDL: %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
@@ -48,7 +42,7 @@ int main() {
     }
     SDL_ShowCursor(0);
 
-    renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
     if (renderer == NULL) {
         fprintf(stderr, "Error creating game renderer: %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
