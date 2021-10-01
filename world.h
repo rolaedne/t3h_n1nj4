@@ -37,7 +37,7 @@ void graphics_load();
 void graphics_free();
 void spawn_snow_particles();
 void spawn_blood_particles(SDL_Rect bleed);
-void set_screen();
+void blit_tiles_to_background();
 void load_current_world_from_file();
 void world_mover();
 int is_collision(const int x, const int y);

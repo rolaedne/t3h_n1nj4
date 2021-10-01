@@ -18,7 +18,7 @@
 // Takes care of case if enemy hands touch ninja. you will make with the dead.
 void check_player_collision(enemy *e) {
     if (player.is_dead || !e->is_alive) { return; } // don't kill the player if they're already dead, and dead enemies can't hurt the player
-    bbox player_box = { player.dest.x - 5, player.dest.y + 5, 50, 70 };
+    bbox player_box = { player.x - 5, player.y + 5, 50, 70 };
     bbox enemy_box = { e->dest.x - 10, e->dest.y, 50, 50 };
     if (bbox_collision(player_box, enemy_box)) { dead(); }
 }
@@ -36,7 +36,7 @@ void draw_enemy(enemy *e) {
     if ((e->dest.x - wrldps.x) < SCREENWIDTH && right_edge > 0) {/*if enemy is alive draw him on screen*/
         if (e->is_alive) {
             e->is_visible = 1;
-            e->is_flipped = (e->dest.x < player.dest.x); // living enemies should face the player
+            e->is_flipped = (e->dest.x < player.x); // living enemies should face the player
             SDL_Surface *enemy_surface = e->is_flipped ? e->anim_frames_flipped[e->anim_frame] : e->anim_frames[e->anim_frame];
             SDL_BlitSurface(enemy_surface, NULL, screen, &e->dest);
         } else {
@@ -158,7 +158,7 @@ void enemy_ai() {
      *Runs through all of their operations to make them
      *function when (an evil?) ninja comes into their world
      ****************************************************/
-    for (int i = 0; i < enemymax; i++) {
+    for (int i = 0; i < enemymax; ++i) {
         enemy *e = &enemies[i];
         enemy_physics(e);
         draw_enemy(e);
@@ -170,44 +170,28 @@ void enemy_ai() {
                 e->gravity_compound = e->jump_strength;
                 e->jump_is_active = 1;
             }
-            if ((e->dir[9] || e->dir[6])
-                    && e->jump_is_active == 0) {/*block on the right*/
+            if ((e->dir[9] || e->dir[6]) && e->jump_is_active == 0) {/*block on the right*/
                 e->gravity_compound = e->jump_strength;
                 e->jump_is_active = 1;
             }
             if (e->dir[3] == 1 || e->dir[1] == 1 || e->dir[5] == 1) {/*on the ground or in the air go toward ninja*/
-                if (player.dest.x > e->dest.x) {
-                    e->dest.x += e->speed;
-                    /*add check for other enemies*/
-                } else {
-                    e->dest.x -= e->speed;
-                }
-                if ((e->dir[3] == 1 || e->dir[0] == 1) && e->dir[1] == 0
-                        && e->jump_is_active == 0) {/*a pit is ahead* left*/
+                e->dest.x += (player.x > e->dest.x) ? e->speed : -e->speed;
+                if ((e->dir[3] == 1 || e->dir[0] == 1) && e->dir[1] == 0 && e->jump_is_active == 0) {/*a pit is ahead* left*/
                     e->gravity_compound = e->jump_strength;
                     e->jump_is_active = 1;
-                } else if ((e->dir[3] == 0 || e->dir[0] == 1) && e->dir[1] == 0
-                        && e->jump_is_active == 0) {/*a pit is ahead* left*/
+                } else if ((e->dir[3] == 0 || e->dir[0] == 1) && e->dir[1] == 0 && e->jump_is_active == 0) {/*a pit is ahead* left*/
                     e->gravity_compound = e->jump_strength;
                     e->jump_is_active = 1;
                 }
             }
         } else if (e->is_visible == 1 && e->is_alive == 0 && e->jump_is_active == 1) {
-            /* this gives dead enemies a knockback effect */
-            if (player.ninja_src.x < 180) {
-                e->dest.x -= 5; /*temp val*/
-            } else if (player.ninja_src.x >= 180) {
-                e->dest.x += 5; /*temp val*/
-            }
-            int x, y;
-            x = e->dest.x + e->dest.w / 2;
-            y = e->dest.y + e->dest.h / 2;
-            x += wrldps.x;
+            // BUG: dead bodies change direction in air if the player changes which direction they are facing
+            e->dest.x += player.is_facing_right ? 5 : -5; // this gives dead enemies a knockback effect
+            const int x = wrldps.x + e->dest.x + (e->dest.w / 2);
+            const int y = e->dest.y + (e->dest.h / 2);
             spawn_particle(blood1, x, y, 0, bounded_rand(0, 1), 1.0, bounded_rand(4, 8));
         }
-        for (int t = 0; t < 10; t++) {/*rests their dir arrray*/
-            e->dir[t] = 0;
-        }
+        for (int t = 0; t < 10; ++t) { e->dir[t] = 0; }
     }/*end for loop*/
 }
 

@@ -125,15 +125,17 @@ void load_current_world_from_file() {
     wrldps.w = 640;
     wrldps.h = 480;
 
-    /*inits ninja image*/
-    player.ninja_src.y = 80;
-    player.ninja_src.x = 180;
-    player.ninja_src.w = 60;
-    player.ninja_src.h = 80;
+    /*inits ninja state*/
+    player.is_facing_right = TRUE;
+    player.is_jumping = FALSE;
+    player.is_running = FALSE;
+    player.is_dead = FALSE;
+    player.w = 60;
+    player.h = 80;
 
     /*ninja start positison*/
-    player.dest.x = 0;
-    player.dest.y = 80 * 4;
+    player.x = 0;
+    player.y = 80 * 4;
 
     /*initialises alive loop for enemies*/
     for (int i = 0; i < NMY; i++) { enemies[i].is_alive = 0; }
@@ -258,11 +260,12 @@ void load_current_world_from_file() {
         world[t][i] = x;
         t--;
     }
-    set_screen();
+    blit_tiles_to_background();
 }
 
-void set_screen() {
-    printf("DEBUG: set_screen()\n");
+
+void blit_tiles_to_background() {
+    printf("DEBUG: blit_tiles_to_background()\n");
     const int world_height = 6;
 
     SDL_BlitSurface(background, &wrldps, screen, NULL);
@@ -274,33 +277,26 @@ void set_screen() {
             worlddest.x = i*BRICK_WIDTH;
             if (world[t][i] == 1) {
                 SDL_BlitSurface(worldfloor, NULL, background, &worlddest);
-                SDL_BlitSurface(worldfloor, NULL, screen, &worlddest);
             } else if (world[t][i] == 2) {
                 SDL_BlitSurface(worldbrick[0], NULL, background, &worlddest);
-                SDL_BlitSurface(worldbrick[0], NULL, screen, &worlddest);
             } else if (world[t][i] == 3) {
                 SDL_BlitSurface(worldbrick[1], NULL, background, &worlddest);
-                SDL_BlitSurface(worldbrick[1], NULL, screen, &worlddest);
             } else if (world[t][i] == 4) {
                 SDL_BlitSurface(worldbrick[2], NULL, background, &worlddest);
-                SDL_BlitSurface(worldbrick[2], NULL, screen, &worlddest);
             } else if (world[t][i] == 5) {
                 SDL_BlitSurface(worldbrick[3], NULL, background, &worlddest);
-                SDL_BlitSurface(worldbrick[3], NULL, screen, &worlddest);
             } else if (world[t][i] == 6) {
                 SDL_BlitSurface(dmgbrick[0], NULL, background, &worlddest);
-                SDL_BlitSurface(dmgbrick[0], NULL, screen, &worlddest);
             } else if (world[t][i] == 7) {
                 SDL_BlitSurface(dmgbrick[1], NULL, background, &worlddest);
-                SDL_BlitSurface(dmgbrick[1], NULL, screen, &worlddest);
             } else if (world[t][i] == 8) {
                 SDL_BlitSurface(dmgbrick[2], NULL, background, &worlddest);
-                SDL_BlitSurface(dmgbrick[2], NULL, screen, &worlddest);
             }
 
         }
     }
 }
+
 
 void world_mover() {
     int i;
@@ -308,17 +304,17 @@ void world_mover() {
      *  This function scrolls world if person is far
      *enought along
      *************************************************/
-    if ((player.dest.x + wrldps.x + (SCREENWIDTH / 2))>(BRICK_WIDTH * world_length)) {/*can't scroll anymore to the right*/
-        if ((player.dest.x + wrldps.x + 25)>(BRICK_WIDTH * world_length)) {/*reached the end of the screen*/
+    if ((player.x + wrldps.x + (SCREENWIDTH / 2))>(BRICK_WIDTH * world_length)) {/*can't scroll anymore to the right*/
+        if ((player.x + wrldps.x + 25)>(BRICK_WIDTH * world_length)) {/*reached the end of the screen*/
             worldnum++;
             load_current_world_from_file(); // Doesn't take worldnum as a parameter
         }
-    } else if (player.dest.x > SCREENWIDTH / 2) {/*moves screen if past half screen lenght*/
-        player.dest.x = SCREENWIDTH / 2;
+    } else if (player.x > SCREENWIDTH / 2) {/*moves screen if past half screen lenght*/
+        player.x = SCREENWIDTH / 2;
         wrldps.x += MOVERL;
         for (i = 0; i < enemymax; i++) { enemies[i].dest.x -= MOVERL; }
-    } else if (player.dest.x < 0) {/*can't run off the left side*/
-        player.dest.x = 0;
+    } else if (player.x < 0) {/*can't run off the left side*/
+        player.x = 0;
     }
 }
 

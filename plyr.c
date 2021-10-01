@@ -24,15 +24,11 @@ void special() {
      **************************************************/
 
     if (player.sattack == 0 && player.score >= 5) {
-        player.score -= 10; if(player.score < 0) { player.score = 0; }
-        player.spdest.x = player.dest.x;
-        player.spdest.y = player.dest.y + 15;
-        player.attacklen = 25;
-        if (player.ninja_src.x >= 180) { // which direction is the ninja facing...
-            player.sattack = 1;
-        } else {
-            player.sattack = 2;
-        }
+        player.score -= 10; if (player.score < 0) { player.score = 0; }
+        player.spdest.x = player.x;
+        player.spdest.y = player.y + 15;
+        player.sattack_length = 25;
+        player.sattack = player.is_facing_right ? 1 : 2;
     }
 }
 
@@ -45,7 +41,7 @@ void special_throw() {
      *will cause the special weapon to be displayed on
      *the screen & determin if it kills the enemy
      *************************************************/
-    if (player.attacklen == 0) {
+    if (player.sattack_length == 0) {
         player.sattack = 0;
         return;
     }
@@ -54,7 +50,7 @@ void special_throw() {
         if (player.sattack == 1) player.spdest.x += SPECIAL_ATTACK_SPEED;
         if (player.sattack == 2) player.spdest.x -= SPECIAL_ATTACK_SPEED;
         player.spdest.y += 1;
-        SDL_BlitSurface((--player.attacklen % 2) ? player.sweapon1_1 : player.sweapon1_2, NULL, screen, &player.spdest);
+        SDL_BlitSurface((--player.sattack_length % 2) ? player.sweapon1_1 : player.sweapon1_2, NULL, screen, &player.spdest);
     }
     killenemy();
 }
@@ -65,19 +61,19 @@ void physics() {
      *will not allow the ninja to go into boxes
      *will cause the ninja to fall if in the air
      *************************************************/
-    if (player.dest.y > SCREENHEIGHT) {  dead(); return; } // Death by falling off the bottom of the screen
+    if (player.y > SCREENHEIGHT) {  dead(); return; } // Death by falling off the bottom of the screen
 
     /*checks in air collision left && right */
     // apply gravity
     player.gravity_compound += GRAVITY;
     if (player.gravity_compound > 15) { player.gravity_compound = 15; }
     if (player.gravity_compound < JUMPMAX) { player.gravity_compound = JUMPMAX; }
-    player.dest.y += player.gravity_compound;
+    player.y += player.gravity_compound;
 
     // convert ninja position from screen position to world position
-    const int ninja_world_x = player.dest.x + wrldps.x;
+    const int ninja_world_x = player.x + wrldps.x;
 
-    int testY = player.dest.y + BRICK_HEIGHT - GRAVITY;
+    int testY = player.y + BRICK_HEIGHT - GRAVITY;
     int testX = ninja_world_x + BRICK_WIDTH - 10;
     int collision_type;
     int collision_type2;
@@ -86,25 +82,25 @@ void physics() {
     if (collision_type || collision_type2) {
         if (collision_type == 7 && (collision_type2 == 7 || collision_type2 == 0)) { dead(); return; } // Tile 7 = up facing lava
         if (collision_type == 0 && collision_type2 == 7) { dead(); return; } // Tile 7 = up facing lava
-        player.dest.y = (testY / BRICK_HEIGHT - 1) * BRICK_HEIGHT;
-        player.jump = 0; player.gravity_compound = 0;
-        player.ninja_src.y = 80; // set frame to on the ground
-    } else if (is_collision(testX, player.dest.y) || is_collision(ninja_world_x, player.dest.y)) {/*will check bootom*/
-        player.dest.y = (testY / BRICK_HEIGHT) * BRICK_HEIGHT;
+        player.y = (testY / BRICK_HEIGHT - 1) * BRICK_HEIGHT;
+        player.is_jumping = FALSE;
+        player.gravity_compound = 0;
+    } else if (is_collision(testX, player.y) || is_collision(ninja_world_x, player.y)) {/*will check bootom*/
+        player.y = (testY / BRICK_HEIGHT) * BRICK_HEIGHT;
         player.gravity_compound = 0;
     }
 
     testX = ninja_world_x + BRICK_WIDTH - 5;
-    testY = player.dest.y + BRICK_HEIGHT - 10;
+    testY = player.y + BRICK_HEIGHT - 10;
 
-    if ((collision_type = is_collision(testX, player.dest.y)) || (collision_type = is_collision(testX, testY))) {
+    if ((collision_type = is_collision(testX, player.y)) || (collision_type = is_collision(testX, testY))) {
         if (collision_type == 7) { return; } // Tile 7 = lava, if you're in it, stay in it
         if (collision_type == 6) { dead(); return; } // Tile 6 = left facing spikes
-        player.dest.x -= MOVERL;
-    } else if ((collision_type = is_collision(ninja_world_x, player.dest.y)) || (collision_type = is_collision(ninja_world_x, testY))) {
+        player.x -= MOVERL;
+    } else if ((collision_type = is_collision(ninja_world_x, player.y)) || (collision_type = is_collision(ninja_world_x, testY))) {
         if (collision_type == 7) { return; } // Tile 7 = lava, if you're in it, stay in it
         if (collision_type == 8) {  dead(); return; } // Tile 8 = right facing spikes
-        player.dest.x += MOVERL;
+        player.x += MOVERL;
     }
 }
 
@@ -113,7 +109,7 @@ void killenemy() {
     if (player.is_dead || (!player.attack && !player.sattack)) { return; } // not attacking or special attacking, so no chance to kill
 
     // adjust sword attack box based on the direction the player is facing
-    const bbox attackBox = { player.dest.x + (player.ninja_src.x >= 180 ? 45 : 0), player.dest.y + 25, 20, 30 };
+    const bbox attackBox = { player.x + (player.is_facing_right ? 45 : 0), player.y + 25, 20, 30 };
     const bbox sattackBox = { player.spdest.x, player.spdest.y, 30, 33 };
 
     for (int i = 0; i < enemymax; i++) {/*checks for each enemy*/
@@ -135,4 +131,39 @@ void killenemy() {
             if (!player.attack) { return; } // no more stars, and no sword out, don't bother checking anything else
         }
     }
+}
+
+
+// ninja_src is references a 360w x 240h (6 x 3) sprite sheet
+// the ninja is 60w x 80h
+// the left half is left facing, the right half is right facing
+// the top row is jumping (nothing, sword out (left), sword sheathed (left), sword sheathed (right), sword out (right), nothing)
+// the middle row is "neutral" (run-left-1, run-left-2, standing-left, standing-right, run-right-2, run-right-1)
+// the bottom row is sword-drawn (run-left-1, run-left-2, standing-left, standing-right, run-right-2, run-right-1)
+
+int animation_frame = 0;
+
+int get_player_frame_y() {
+    if (player.is_dead || player.is_jumping) { return 0; }
+    if (player.is_attacking) { return 160; } // player.h * 2
+    return 80; // on ground, not attacking
+}
+
+int get_player_frame_x() {
+    if (player.is_dead) { return player.is_facing_right ? 300 : 0; }
+    if (player.is_jumping) {
+        if (player.is_attacking) { return player.is_facing_right ? 240 : 60; }
+        return player.is_facing_right ? 180 : 120;
+    }
+    if (!player.is_running) { return player.is_facing_right ? 180 : 120; }
+    animation_frame = !animation_frame;
+    const int offset = animation_frame ? 60 : 0;
+    return player.is_facing_right ? 240 + offset : 0 + offset;
+}
+
+void draw_player() {
+    player.is_attacking = player.attack > 0;
+    SDL_Rect src = { get_player_frame_x(), get_player_frame_y(), player.w, player.h };
+    SDL_Rect dest = { player.x, player.y, player.w, player.h };
+    SDL_BlitSurface(player.ninja, &src, screen, &dest);
 }
