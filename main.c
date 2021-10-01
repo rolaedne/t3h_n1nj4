@@ -120,20 +120,13 @@ int main() {
             skipLevel = 0;
         }
 
-        player_physics();
-
-        if (player.attack > 0) {
-            check_for_kills();
-            player.attack--;
-        }
-
         ticks = SDL_GetTicks();
 
-        spawn_snow_particles(); // precipitation_tick
         SDL_BlitSurface(background, &wrldps, screen, NULL); // draw_background || draw_world
+        player_physics();
         draw_player();
-        special_throw(); // special_attack_physics_tick && draw_special_attack
         enemy_ai(); // enemies_tick && draw_enemies
+        spawn_snow_particles(); // precipitation_tick
         draw_particles(screen);
         SDL_BlitSurface(foreground, &wrldps, screen, NULL); // draw_shadows || draw_overlays
         draw_score_ui();
@@ -383,7 +376,6 @@ void dead() {
         bloodSpawn.x = old_x + bounded_rand(10, 25);
         spawn_blood_particles(bloodSpawn);
         bloodSpawn.x = old_x;
-        special_throw();
         player_physics();
         enemy_ai();
         draw_score_ui();

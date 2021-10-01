@@ -48,8 +48,6 @@ typedef struct {
 
 enemy enemies[NMY];
 
-void check_player_collision(enemy *e);
-void enemy_physics(enemy *e);
 void enemy_ai();
 
 #ifdef __cplusplus

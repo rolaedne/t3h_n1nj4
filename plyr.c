@@ -16,6 +16,8 @@
 #include "utils.h"
 #include "screens.h"
 
+void check_for_kills();
+
 void special() {
     /*************************************************
      *starts special weapon attack
@@ -44,15 +46,15 @@ void special_throw() {
     if (player.sattack_length == 0) {
         player.sattack = 0;
         return;
+    } else {
+        player.sattack_length--;
     }
 
     if (player.sattack == 1 || player.sattack == 2) { // attacking left (1) or right (2)
         if (player.sattack == 1) player.spdest.x += SPECIAL_ATTACK_SPEED;
         if (player.sattack == 2) player.spdest.x -= SPECIAL_ATTACK_SPEED;
         player.spdest.y += 1;
-        SDL_BlitSurface((--player.sattack_length % 2) ? player.sweapon1_1 : player.sweapon1_2, NULL, screen, &player.spdest);
     }
-    check_for_kills();
 }
 
 void player_physics() {
@@ -102,6 +104,12 @@ void player_physics() {
         if (collision_type == 8) {  dead(); return; } // Tile 8 = right facing spikes
         player.x += MOVERL;
     }
+
+    if (player.attack > 0) {
+        player.attack--;
+    }
+    special_throw();
+    check_for_kills();
 }
 
 // Checks for attack (sword) and special attack (star) kills
@@ -161,9 +169,16 @@ int get_player_frame_x() {
     return player.is_facing_right ? 240 + offset : 0 + offset;
 }
 
+void draw_special() {
+    if (player.sattack) {
+        SDL_BlitSurface((player.sattack_length % 2) ? player.sweapon1_1 : player.sweapon1_2, NULL, screen, &player.spdest);
+    }
+}
+
 void draw_player() {
     player.is_attacking = player.attack > 0;
     SDL_Rect src = { get_player_frame_x(), get_player_frame_y(), player.w, player.h };
     SDL_Rect dest = { player.x, player.y, player.w, player.h };
     SDL_BlitSurface(player.ninja, &src, screen, &dest);
+    draw_special();
 }
