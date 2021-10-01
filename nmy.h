@@ -49,6 +49,7 @@ typedef struct {
 enemy enemies[NMY];
 
 void enemy_ai();
+void draw_enemies();
 
 #ifdef __cplusplus
 }

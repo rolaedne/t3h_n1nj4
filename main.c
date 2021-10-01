@@ -124,9 +124,10 @@ int main() {
 
         SDL_BlitSurface(background, &wrldps, screen, NULL); // draw_background || draw_world
         player_physics();
-        draw_player();
-        enemy_ai(); // enemies_tick && draw_enemies
+        enemy_ai(); // enemies_tick
         spawn_snow_particles(); // precipitation_tick
+        draw_player();
+        draw_enemies();
         draw_particles(screen);
         SDL_BlitSurface(foreground, &wrldps, screen, NULL); // draw_shadows || draw_overlays
         draw_score_ui();
@@ -364,6 +365,9 @@ void dead() {
 
     int delayWait = 750; // Give the player a moment to see how they died
     while (!delay_ms_unskippable(MSECS_PER_FRAME) && delayWait > 0) {
+        player_physics();
+        enemy_ai();
+        spawn_snow_particles();
         SDL_BlitSurface(background, &wrldps, screen, NULL);
         draw_player();
         bloodSpawn.x = player.x;
@@ -376,11 +380,9 @@ void dead() {
         bloodSpawn.x = old_x + bounded_rand(10, 25);
         spawn_blood_particles(bloodSpawn);
         bloodSpawn.x = old_x;
-        player_physics();
-        enemy_ai();
-        draw_score_ui();
-        spawn_snow_particles();
+        draw_enemies();
         draw_particles(screen);
+        draw_score_ui();
         update_screen();
 
         delayWait -= MSECS_PER_FRAME;

@@ -163,9 +163,7 @@ void enemy_ai() {
     for (int i = 0; i < enemymax; ++i) {
         enemy *e = &enemies[i];
         enemy_physics(e); // populates e->dir[]
-        draw_enemy(e);
         check_player_collision(e);
-        update_animation_frame(e);
 
         if (!e->is_visible) { continue; } // off screen = switched off
 
@@ -193,6 +191,14 @@ void enemy_ai() {
             spawn_particle(blood1, x, y, 0, bounded_rand(0, 1), 1.0, bounded_rand(4, 8));
         }
 
+    }
+}
+
+void draw_enemies() {
+    for (int i = 0; i < enemymax; ++i) {
+        enemy *e = &enemies[i];
+        update_animation_frame(e);
+        draw_enemy(e);
     }
 }
 
