@@ -151,18 +151,20 @@ void load_current_world_from_file() {
         exit(EXIT_SUCCESS);
     }
 
-    int x;
-    fscanf(world_file, "%d", &x);
+    int temp_int;
+    fscanf(world_file, "%d", &temp_int);
 
-    enemymax = x; /*set max amount of enemies*/
+    enemymax = temp_int; /*set max amount of enemies*/
     for (int i = 0; i < NMY && i < enemymax; i++) {/*set enemy destinations from file*/
         enemy *e = &enemies[i];
-        fscanf(world_file, "%d", &x);
-        e->type = x;
-        fscanf(world_file, "%d", &x);
-        e->dest.x = x*BRICK_WIDTH;
-        fscanf(world_file, "%d", &x);
-        e->dest.y = x*BRICK_HEIGHT;
+        e->w = BRICK_WIDTH;
+        e->h = BRICK_HEIGHT;
+        fscanf(world_file, "%d", &temp_int);
+        e->type = temp_int;
+        fscanf(world_file, "%d", &temp_int);
+        e->x = temp_int * BRICK_WIDTH;
+        fscanf(world_file, "%d", &temp_int);
+        e->y = temp_int * BRICK_HEIGHT;
         e->is_alive = 1;
         e->is_jumping = 0;
         e->is_flipped = 0;
@@ -212,13 +214,13 @@ void load_current_world_from_file() {
         for (int f = 0; f < NMY_DEATHS; ++f) { e->death_frames_flipped[f] = mirror_surface(e->death_frames[f]); }
     }
 
-    fscanf(world_file, "%d", &x);
-    world_length = x;
+    fscanf(world_file, "%d", &temp_int);
+    world_length = temp_int;
 
     // START: Generate background image
     //sprintf(lvlname, "lvl/background%d.png", worldnum);
     //background = load_image_as_rgba(lvlname);
-    background = create_rgba_surface(x * BRICK_WIDTH, SCREENHEIGHT);
+    background = create_rgba_surface(world_length * BRICK_WIDTH, SCREENHEIGHT);
     SDL_Rect dst; dst.x = 0; dst.y = 0; dst.w = background->w; dst.h = background->h;
 
     SDL_FillRect(background, &dst, SDL_MapRGB(background->format, 0, 0, 0)); // black
@@ -251,12 +253,12 @@ void load_current_world_from_file() {
     int i = 0;
     int t = 5;
     while (!feof(world_file)) {/*creates game world from frile*/
-        fscanf(world_file, "%d", &x);
+        fscanf(world_file, "%d", &temp_int);
         if (t == -1) {
             t = 5;
             i++;
         }
-        world[t][i] = x;
+        world[t][i] = temp_int;
         t--;
     }
     blit_tiles_to_background();
@@ -311,7 +313,7 @@ void world_mover() {
     } else if (player.x > SCREENWIDTH / 2) {/*moves screen if past half screen lenght*/
         player.x = SCREENWIDTH / 2;
         wrldps.x += MOVERL;
-        for (i = 0; i < enemymax; i++) { enemies[i].dest.x -= MOVERL; }
+        for (i = 0; i < enemymax; i++) { enemies[i].x -= MOVERL; }
     } else if (player.x < 0) {/*can't run off the left side*/
         player.x = 0;
     }

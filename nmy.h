@@ -30,7 +30,10 @@ typedef struct {
     SDL_Surface *anim_frames_flipped[NMY_FRAMES]; // frames of animation, flipped horizontally
     SDL_Surface *death_frames[NMY_DEATHS]; // death frames
     SDL_Surface *death_frames_flipped[NMY_DEATHS]; // death frames, flipped horizontally
-    SDL_Rect dest; // Abused to track enemy location
+    int x;
+    int y;
+    int w;
+    int h;
     int death_type;
     int death_bleed_counter;
     int is_alive;

@@ -120,19 +120,20 @@ void check_for_kills() {
     const bbox sattackBox = { player.spdest.x, player.spdest.y, 30, 33 };
 
     for (int i = 0; i < enemymax; i++) {/*checks for each enemy*/
-        if (enemies[i].is_alive == 0) { continue; } /*don't recheck the dead*/
+        enemy *e = &enemies[i];
+        if (e->is_alive == 0) { continue; } /*don't recheck the dead*/
 
-        const bbox enemyBox = { enemies[i].dest.x, enemies[i].dest.y, 60, 80 };
+        const bbox enemyBox = { e->x, e->y, e->w, e->h };
 
         if (player.attack && bbox_collision(enemyBox, attackBox)) { // Sword attack
-            enemies[i].is_alive = 0;
+            e->is_alive = 0;
             player.score += 10;
-            enemies[i].death_type = BYSWORD;
-            enemies[i].death_bleed_counter = 25; // how bloody is the death?
+            e->death_type = BYSWORD;
+            e->death_bleed_counter = 25; // how bloody is the death?
         } else if (player.sattack && bbox_collision(enemyBox, sattackBox)) { // Star attack
-            enemies[i].is_alive = 0;
-            enemies[i].death_type = BYSTAR;
-            enemies[i].death_bleed_counter = 10; // how bloody is the death?
+            e->is_alive = 0;
+            e->death_type = BYSTAR;
+            e->death_bleed_counter = 10; // how bloody is the death?
             player.score += 5; // small refund for star kills
             player.sattack = 0;
             if (!player.attack) { return; } // no more stars, and no sword out, don't bother checking anything else
