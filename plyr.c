@@ -52,10 +52,10 @@ void special_throw() {
         player.spdest.y += 1;
         SDL_BlitSurface((--player.sattack_length % 2) ? player.sweapon1_1 : player.sweapon1_2, NULL, screen, &player.spdest);
     }
-    killenemy();
+    check_for_kills();
 }
 
-void physics() {
+void player_physics() {
     /*************************************************
      *ninja physisc
      *will not allow the ninja to go into boxes
@@ -105,7 +105,7 @@ void physics() {
 }
 
 // Checks for attack (sword) and special attack (star) kills
-void killenemy() {
+void check_for_kills() {
     if (player.is_dead || (!player.attack && !player.sattack)) { return; } // not attacking or special attacking, so no chance to kill
 
     // adjust sword attack box based on the direction the player is facing

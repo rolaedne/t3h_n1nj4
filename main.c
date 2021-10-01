@@ -120,10 +120,10 @@ int main() {
             skipLevel = 0;
         }
 
-        physics();
+        player_physics();
 
         if (player.attack > 0) {
-            killenemy();
+            check_for_kills();
             player.attack--;
         }
 
@@ -384,7 +384,7 @@ void dead() {
         spawn_blood_particles(bloodSpawn);
         bloodSpawn.x = old_x;
         special_throw();
-        physics();
+        player_physics();
         enemy_ai();
         draw_score_ui();
         spawn_snow_particles();

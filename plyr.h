@@ -33,8 +33,8 @@ typedef struct {
 Player player;
 
 void jumping(int jump);
-void physics();
-void killenemy();
+void player_physics();
+void check_for_kills();
 void special();
 void special_throw();
 void draw_player();
