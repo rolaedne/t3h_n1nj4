@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 typedef enum {
     FALSE = 0, TRUE = 1

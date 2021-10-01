@@ -7,8 +7,7 @@
  *also handles moveing the world when ninja moves
  *to far on the screen
  ********************************************/
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
+#include <SDL2/SDL.h>
 
 #include "world.h"
 #include "nmy.h"

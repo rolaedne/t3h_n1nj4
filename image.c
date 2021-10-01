@@ -1,3 +1,4 @@
+#include <SDL2/SDL_image.h>
 #include "image.h"
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -24,7 +25,7 @@ SDL_Surface *create_rgba_surface(const unsigned int width, const unsigned int he
 SDL_Surface* copy_to_rgba_surface(SDL_Surface *surface) {
     if (surface == NULL) { return NULL; }
     SDL_Surface *original_copy = SDL_ConvertSurface(surface, surface->format, 0); // don't pollute the original
-    SDL_SetAlpha(original_copy, 0, SDL_ALPHA_OPAQUE); // copying with transparent pixels doesn't work how you'd expect!
+    SDL_SetSurfaceBlendMode(original_copy, SDL_BLENDMODE_NONE);
     SDL_Surface *rgba_copy = create_rgba_surface(surface->w, surface->h);
     SDL_BlitSurface(original_copy, NULL, rgba_copy, NULL);
     SDL_FreeSurface(original_copy);

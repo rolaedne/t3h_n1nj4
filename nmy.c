@@ -5,8 +5,7 @@
  *animation of the enemies.
  ********************************************/
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
+#include <SDL2/SDL.h>
 
 #include "world.h"
 #include "nmy.h"

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
+#include <SDL2/SDL.h>
 
 #include "world.h"
 #include "nmy.h"
@@ -12,12 +11,16 @@
 #include "screens.h"
 
 #define DTIME 5
-#define MSECS_PER_FRAME 1000/60
+#define MSECS_PER_FRAME 1000/30
 
 void show_start_screen();
 void play_intro_movie();
 void draw_score_ui();
 void update_screen();
+
+SDL_Window *window;
+SDL_Renderer *renderer;
+SDL_Texture *screen_texture;
 
 int main() {
     /*********************************************************
@@ -32,13 +35,29 @@ int main() {
     }
     atexit(SDL_Quit);
 
-    screen = SDL_SetVideoMode(640, 480, 0, SDL_DOUBLEBUF); /*creates screen*/
-    if (screen == NULL) {
-        fprintf(stderr, "Error setting video mode 640x480: %s\n", SDL_GetError());
+    window = SDL_CreateWindow(
+        "t3h N1nj4 redux",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        640, 480,
+        0
+    );
+    if (window == NULL) {
+        fprintf(stderr, "Error creating game window: %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
     }
+    SDL_ShowCursor(0);
 
-    SDL_WM_SetCaption("t3h N1nj4 redux", NULL); /*sets caption 4 prog*/
+    renderer = SDL_CreateRenderer(window, -1, 0);
+    if (renderer == NULL) {
+        fprintf(stderr, "Error creating game renderer: %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
+    SDL_RenderSetLogicalSize(renderer, 640, 480);
+
+    screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, 640, 480);
+    screen = create_rgba_surface(640, 480);
 
     show_start_screen();
 
@@ -53,60 +72,57 @@ int main() {
     graphics_load();
     load_current_world_from_file(); /*builds the world*/
 
-    //SDL_BlitSurface(ninja, &player.ninja_src, screen, &dest);
-    //update_screen();
-
     int skipLevel = 0;
     Uint32 ticks, delay, tmp_ps = 0;
-    Uint8* keys;
+
     while (SDL_PollEvent(&event) != -1) {//main even loop
-        keys = SDL_GetKeyState(NULL);
+        const Uint8* keys = SDL_GetKeyboardState(NULL);
 
         switch (event.type) {
             case SDL_QUIT: //quits program
                 exit(0);
                 break;
             case SDL_KEYDOWN: //registars key down
-                if (event.key.keysym.sym==SDLK_TAB && skipLevel == 0) {
+                if (event.key.keysym.sym==SDL_SCANCODE_TAB && skipLevel == 0) {
                     skipLevel = 1;
                     break;
                 }
-                if (keys[SDLK_DOWN]) {
+                if (keys[SDL_SCANCODE_DOWN]) {
                     special();
                 }
-                if (keys[SDLK_LEFT]) {
+                if (keys[SDL_SCANCODE_LEFT]) {
                     player.x -= MOVERL;
                     player.is_facing_right = FALSE;
                     player.is_running = TRUE;
                 }
-                if (keys[SDLK_RIGHT]) {
+                if (keys[SDL_SCANCODE_RIGHT]) {
                     player.x += MOVERL;
                     player.is_facing_right = TRUE;
                     player.is_running = TRUE;
                 }
-                if (keys[SDLK_UP]) {
+                if (keys[SDL_SCANCODE_UP]) {
                     if (!player.is_jumping) {
                         player.is_jumping = TRUE;
                         player.gravity_compound = JUMPMAX;
                     }
                 }
-                if (keys[SDLK_SPACE]) {
+                if (keys[SDL_SCANCODE_SPACE]) {
                     if (player.attack == 0) {
                         player.attack = ATTLEN;
                     }
                 }
                 break;
             case SDL_KEYUP:
-                if (event.key.keysym.sym==SDLK_TAB && skipLevel == 1) {
+                if (event.key.keysym.sym==SDL_SCANCODE_TAB && skipLevel == 1) {
                     skipLevel = 2;
                     break;
                 }
-                if (keys[SDLK_LEFT]) {
+                if (keys[SDL_SCANCODE_LEFT]) {
                     player.x -= MOVERL;
                     player.is_facing_right = FALSE;
                     player.is_running = TRUE;
                 }
-                if (keys[SDLK_RIGHT]) {
+                if (keys[SDL_SCANCODE_RIGHT]) {
                     player.x += MOVERL;
                     player.is_facing_right = TRUE;
                     player.is_running = TRUE;
@@ -416,5 +432,8 @@ void show_victory_screen() {
 }
 
 void update_screen() {
-    SDL_Flip(screen);
+    SDL_UpdateTexture(screen_texture, NULL, screen->pixels, screen->pitch);
+    SDL_RenderClear(renderer); // clear
+    SDL_RenderCopy(renderer, screen_texture, NULL, NULL); // render the whole screen_texture
+    SDL_RenderPresent(renderer); // update the display hardware
 }

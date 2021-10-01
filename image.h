@@ -5,8 +5,7 @@
 extern "C" {
 #endif
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
+#include <SDL2/SDL.h>
 
 SDL_Surface* load_image_as_rgba(const char* filename);
 SDL_Surface* create_rgba_surface(const unsigned int width, const unsigned int height);

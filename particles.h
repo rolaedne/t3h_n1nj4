@@ -4,8 +4,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
+#include <SDL2/SDL.h>
 
 typedef struct {
     int x;

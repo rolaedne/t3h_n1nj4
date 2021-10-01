@@ -11,7 +11,7 @@ extern "C" {
 *are needed to build and maintain the world
 ********************************************/
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #define MOVERL 10
 #define SCREENWIDTH 640

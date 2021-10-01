@@ -1,7 +1,7 @@
 #include "particles.h"
 #include "world.h"
 #include <stddef.h>
-#include <SDL/SDL_video.h>
+#include <SDL2/SDL_video.h>
 
 //TODO: make this a collection
 #define MAX_PARTICLES 1024
