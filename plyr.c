@@ -73,31 +73,31 @@ void player_physics() {
     // convert ninja position from screen position to world position
     const int ninja_world_x = player.x + wrldps.x;
 
-    int testY = player.y + BRICK_HEIGHT - GRAVITY;
-    int testX = ninja_world_x + BRICK_WIDTH - 10;
+    int test_y = player.y + BRICK_HEIGHT - GRAVITY;
+    int test_x = ninja_world_x + BRICK_WIDTH - 10;
     int collision_type;
     int collision_type2;
-    collision_type = is_collision(ninja_world_x + 10, testY); // left foot
-    collision_type2 = is_collision(testX, testY); // right foot
+    collision_type = is_collision(ninja_world_x + 10, test_y); // left foot
+    collision_type2 = is_collision(test_x, test_y); // right foot
     if (collision_type || collision_type2) {
         if (collision_type == 7 && (collision_type2 == 7 || collision_type2 == 0)) { dead(); return; } // Tile 7 = up facing lava
         if (collision_type == 0 && collision_type2 == 7) { dead(); return; } // Tile 7 = up facing lava
-        player.y = (testY / BRICK_HEIGHT - 1) * BRICK_HEIGHT;
+        player.y = (test_y / BRICK_HEIGHT - 1) * BRICK_HEIGHT;
         player.is_jumping = FALSE;
         player.gravity_compound = 0;
-    } else if (is_collision(testX, player.y) || is_collision(ninja_world_x, player.y)) {/*will check bootom*/
-        player.y = (testY / BRICK_HEIGHT) * BRICK_HEIGHT;
+    } else if (is_collision(test_x, player.y) || is_collision(ninja_world_x, player.y)) {/*will check bootom*/
+        player.y = (test_y / BRICK_HEIGHT) * BRICK_HEIGHT;
         player.gravity_compound = 0;
     }
 
-    testX = ninja_world_x + BRICK_WIDTH - 5;
-    testY = player.y + BRICK_HEIGHT - 10;
+    test_x = ninja_world_x + BRICK_WIDTH - 5;
+    test_y = player.y + BRICK_HEIGHT - 10;
 
-    if ((collision_type = is_collision(testX, player.y)) || (collision_type = is_collision(testX, testY))) {
+    if ((collision_type = is_collision(test_x, player.y)) || (collision_type = is_collision(test_x, test_y))) {
         if (collision_type == 7) { return; } // Tile 7 = lava, if you're in it, stay in it
         if (collision_type == 6) { dead(); return; } // Tile 6 = left facing spikes
         player.x -= MOVERL;
-    } else if ((collision_type = is_collision(ninja_world_x, player.y)) || (collision_type = is_collision(ninja_world_x, testY))) {
+    } else if ((collision_type = is_collision(ninja_world_x, player.y)) || (collision_type = is_collision(ninja_world_x, test_y))) {
         if (collision_type == 7) { return; } // Tile 7 = lava, if you're in it, stay in it
         if (collision_type == 8) {  dead(); return; } // Tile 8 = right facing spikes
         player.x += MOVERL;

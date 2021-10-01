@@ -40,15 +40,8 @@ typedef struct {
     int type; /*type of enemy*/
     int anim_delay;/*a count var NMYDLY in nmy.c tells lenght of delay*/
     int anim_frame;/*what animation to use*/
-    /*********************
-    * keeps track of last hit object in world. used mainly for ai to handle direction and jumping.
-    * 5 would be in that air everything else would be around enemy.
-    * 789
-    * 456
-    * 123
-    *******************/
     int dir[10]; //see above
-    int jump_is_active; // are they jumping
+    int is_jumping; // are they jumping
     int jump_strength; // how high enemies jump
     int speed; // how fast an enemy moves
 } enemy;

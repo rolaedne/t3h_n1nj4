@@ -165,7 +165,7 @@ void load_current_world_from_file() {
         fscanf(world_file, "%d", &x);
         e->dest.y = x*BRICK_HEIGHT;
         e->is_alive = 1;
-        e->jump_is_active = 0;
+        e->is_jumping = 0;
         e->is_flipped = 0;
         e->anim_frame = 0; /*what animation frame to start on*/
         e->anim_delay = 0; /*used to count in a delay funt*/
