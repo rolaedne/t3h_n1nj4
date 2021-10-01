@@ -39,8 +39,8 @@ int main() {
         "t3h N1nj4 redux",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        640, 480,
-        0
+        1024, 768,
+        SDL_WINDOW_RESIZABLE
     );
     if (window == NULL) {
         fprintf(stderr, "Error creating game window: %s\n", SDL_GetError());
