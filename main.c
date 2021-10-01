@@ -72,6 +72,12 @@ int main() {
     while (SDL_PollEvent(&event) != -1) {//main even loop
         const Uint8* keys = SDL_GetKeyboardState(NULL);
 
+        if (keys[SDL_SCANCODE_LEFT] ^ keys[SDL_SCANCODE_RIGHT]) { // XOR, don't move left and right at the same time
+            player.is_facing_right = keys[SDL_SCANCODE_RIGHT];
+            player.is_running = TRUE;
+            player.x += player.is_facing_right ? MOVERL : -MOVERL; // TODO: Actual player movement should be in player_physics?
+        }
+
         switch (event.type) {
             case SDL_QUIT: //quits program
                 exit(0);
@@ -83,16 +89,6 @@ int main() {
                 }
                 if (keys[SDL_SCANCODE_DOWN]) {
                     special();
-                }
-                if (keys[SDL_SCANCODE_LEFT]) {
-                    player.x -= MOVERL;
-                    player.is_facing_right = FALSE;
-                    player.is_running = TRUE;
-                }
-                if (keys[SDL_SCANCODE_RIGHT]) {
-                    player.x += MOVERL;
-                    player.is_facing_right = TRUE;
-                    player.is_running = TRUE;
                 }
                 if (keys[SDL_SCANCODE_UP]) {
                     if (!player.is_jumping) {
@@ -110,16 +106,6 @@ int main() {
                 if (event.key.keysym.sym==SDL_SCANCODE_TAB && skipLevel == 1) {
                     skipLevel = 2;
                     break;
-                }
-                if (keys[SDL_SCANCODE_LEFT]) {
-                    player.x -= MOVERL;
-                    player.is_facing_right = FALSE;
-                    player.is_running = TRUE;
-                }
-                if (keys[SDL_SCANCODE_RIGHT]) {
-                    player.x += MOVERL;
-                    player.is_facing_right = TRUE;
-                    player.is_running = TRUE;
                 }
                 break;
         }
