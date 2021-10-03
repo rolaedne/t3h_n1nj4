@@ -28,9 +28,9 @@ SDL_Surface *snow;
 
 int is_collision(const int x, const int y) {
     const int row = y / BRICK_HEIGHT;
-    if (row > WORLD_ROWS || row < 0) { return 1; }
+    if (row > WORLD_ROWS || row < 0) { return -1; }
     const int col = x / BRICK_WIDTH;
-    if (col > WORLD_COLS || col < 0) { return 1; }
+    if (col > WORLD_COLS || col < 0) { return -1; }
     //printf("BRICK: %dx%d\n", row, col);
     return world[row][col];
 }

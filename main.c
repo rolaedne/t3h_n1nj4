@@ -9,6 +9,7 @@
 #include "image.h"
 #include "utils.h"
 #include "screens.h"
+#include "controls.h"
 
 #define DTIME 5
 #define MSECS_PER_FRAME 1000/30
@@ -53,6 +54,8 @@ int main() {
     screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, 640, 480);
     screen = create_rgba_surface(640, 480);
 
+    init_controls();
+
     show_start_screen();
 
     /*init variables*/
@@ -69,47 +72,38 @@ int main() {
     int skipLevel = 0;
     Uint32 ticks, delay, tmp_ps = 0;
 
+    // TODO: SDL_PollEvent just takes one event off the queue, but queue should generally be emptied each frame (see: SDL_PollEvent docs)
     while (SDL_PollEvent(&event) != -1) {//main even loop
+        if (event.type == SDL_QUIT) {
+            exit(0);
+        }
+
         const Uint8* keys = SDL_GetKeyboardState(NULL);
 
-        if (keys[SDL_SCANCODE_LEFT] ^ keys[SDL_SCANCODE_RIGHT]) { // XOR, don't move left and right at the same time
-            player.is_facing_right = keys[SDL_SCANCODE_RIGHT];
+        if (keys[controls.left] ^ keys[controls.right]) { // XOR, don't move left and right at the same time
+            player.is_facing_right = keys[controls.right];
             player.is_running = TRUE;
             player.x += player.is_facing_right ? MOVERL : -MOVERL; // TODO: Actual player movement should be in player_physics?
         }
-
-        switch (event.type) {
-            case SDL_QUIT: //quits program
-                exit(0);
-                break;
-            case SDL_KEYDOWN: //registars key down
-                if (event.key.keysym.sym==SDL_SCANCODE_TAB && skipLevel == 0) {
-                    skipLevel = 1;
-                    break;
-                }
-                if (keys[SDL_SCANCODE_DOWN]) {
-                    special();
-                }
-                if (keys[SDL_SCANCODE_UP]) {
-                    if (!player.is_jumping) {
-                        player.is_jumping = TRUE;
-                        player.gravity_compound = JUMPMAX;
-                    }
-                }
-                if (keys[SDL_SCANCODE_SPACE]) {
-                    if (player.attack == 0) {
-                        player.attack = ATTLEN;
-                    }
-                }
-                break;
-            case SDL_KEYUP:
-                if (event.key.keysym.sym==SDL_SCANCODE_TAB && skipLevel == 1) {
-                    skipLevel = 2;
-                    break;
-                }
-                break;
+        if (keys[controls.special_attack]) {
+            special();
         }
-        if (skipLevel == 2) {
+        if (keys[controls.jump]) {
+            if (!player.is_jumping) {
+                player.is_jumping = TRUE;
+                player.gravity_compound = JUMPMAX;
+            }
+        }
+        if (keys[controls.attack]) {
+            if (player.attack == 0) {
+                player.attack = ATTLEN;
+            }
+        }
+        // TODO: Move debug input logic and debug flags/functionality into a debug.c/.h
+        // check_debug_keys(keys);
+        if (keys[controls.debug_skip_level] && skipLevel == 0) {
+            skipLevel = 1;
+        } else if (!keys[controls.debug_skip_level] && skipLevel == 1) {
             printf("DEBUG: Cheater, skipping level %d\n", worldnum);
             worldnum++;
             load_current_world_from_file();

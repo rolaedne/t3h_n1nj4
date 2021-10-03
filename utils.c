@@ -10,16 +10,12 @@ int bounded_rand(const int min, const int max) {
     return random;
 }
 
-int bbox_collision(bbox box1, bbox box2) {
-    if (box1.x <= box2.x && box2.x <= box1.x + box1.w) {
-        if (box1.y <= box2.y && box2.y <= box1.y + box1.h) { return 1; }  // check upper left corner of box2.
-        if (box1.y <= box2.y + box2.h && box2.y + box2.h <= box1.y + box1.h) { return 1; } // check bottom left corner of box2.
-    }
-    if (box1.x <= box2.x + box2.w && box2.x + box2.w <= box1.x + box1.w) {
-        if (box1.y <= box2.y && box2.y <= box1.y + box1.h) { return 1; } //check upper right corner of box2.
-        if (box1.y <= box2.y + box2.h && box2.y + box2.h <= box1.y + box1.h) { return 1; } // check bottom right corner of box2.
-    }
-    return 0;
+int bbox_collision(const bbox box1, const bbox box2) {
+    return (box1.x < box2.x + box2.w &&
+            box1.x + box1.w > box2.x &&
+            box1.y < box2.y + box2.h &&
+            box1.y + box1.h > box2.y
+    );
 }
 
 Boolean skippable = TRUE;

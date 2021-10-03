@@ -53,6 +53,34 @@ void draw_enemy(enemy *e) {
     }
 }
 
+int get_tile(const int row, const int col) {
+    if (row > WORLD_ROWS || row < 0 || col > WORLD_COLS || col < 0) { return -1; }
+    return world[row][col];
+}
+
+void populate_dir(enemy *e) {
+    const int center_x = e->x + wrldps.x + (e->w / 2);
+    const int center_y = e->y + (e->h / 2);
+    const int tile_row = center_y / BRICK_HEIGHT;
+    const int tile_col = center_x / BRICK_WIDTH;
+
+    /*
+    * e->dir[] represents the tiles around the player
+    * 7 8 9
+    * 4 e 6
+    * 1 2 3
+    */
+    e->dir[7] = get_tile(tile_row - 1, tile_col - 1);
+    e->dir[8] = get_tile(tile_row - 1, tile_col);
+    e->dir[9] = get_tile(tile_row - 1, tile_col + 1);
+    e->dir[4] = get_tile(tile_row, tile_col - 1);
+    e->dir[5] = get_tile(tile_row, tile_col); // current position
+    e->dir[6] = get_tile(tile_row, tile_col + 1);
+    e->dir[1] = get_tile(tile_row + 1, tile_col - 1);
+    e->dir[2] = get_tile(tile_row + 1, tile_col);
+    e->dir[3] = get_tile(tile_row + 1, tile_col + 1);
+}
+
 /*****************************************
  * enemy physisc loop
  * collision detection for the enemies
@@ -61,9 +89,6 @@ void draw_enemy(enemy *e) {
 void enemy_physics(enemy *e) {
     e->y += GRAVITY + e->gravity_compound;
     e->gravity_compound += GRAVITY;
-
-    for (int i = 0; i < 10; ++i) { e->dir[i] = 0; }
-    e->dir[5] = 1;
 
     // death by falling off screen
     if (e->y + (BRICK_HEIGHT / 2) > SCREENHEIGHT) {
@@ -81,7 +106,6 @@ void enemy_physics(enemy *e) {
         e->is_jumping = FALSE;
         e->y = ((test_y / BRICK_HEIGHT) - 1) * BRICK_HEIGHT;
         test_y = e->y + BRICK_HEIGHT - GRAVITY;
-        e->dir[1] = collision_type;
     }
 
     // check bottom-right (dir[3])
@@ -92,7 +116,6 @@ void enemy_physics(enemy *e) {
         e->is_jumping = FALSE;
         e->y = ((test_y / BRICK_HEIGHT) - 1) * BRICK_HEIGHT;
         test_y = e->y + BRICK_HEIGHT - GRAVITY;
-        e->dir[3] = collision_type;
     }
 
     // check top/top-right (dir[8]/dir[9])
@@ -101,8 +124,6 @@ void enemy_physics(enemy *e) {
         e->gravity_compound = 0;
         e->y = (test_y / BRICK_HEIGHT) * BRICK_HEIGHT;
         test_y = e->y + BRICK_HEIGHT - GRAVITY;
-        e->dir[8] = collision_type;
-        e->dir[9] = collision_type;
     }
 
     // check top/top-left (dir[8]/dir[7])
@@ -111,8 +132,6 @@ void enemy_physics(enemy *e) {
         e->gravity_compound = 0;
         e->y = (test_y / BRICK_HEIGHT) * BRICK_HEIGHT;
         test_y = e->y + BRICK_HEIGHT - GRAVITY;
-        e->dir[7] = collision_type;
-        e->dir[8] = collision_type;
     }
 
     // check right (dir[6])
@@ -121,19 +140,16 @@ void enemy_physics(enemy *e) {
     collision_type = is_collision(test_x, test_y);
     if (collision_type) {
         e->x -= MOVERL;
-        e->dir[6] = collision_type;
     }
 
     // check left (dir[4])
     collision_type = is_collision(e->x + wrldps.x, test_y);
     if (collision_type) {
         e->x += MOVERL;
-        e->dir[4] = collision_type;
     }
 
     // check below (dir[2])
     collision_type = is_collision(e->x + wrldps.x + (BRICK_WIDTH / 2), e->y + BRICK_HEIGHT + 10);
-    e->dir[2] = collision_type;
     if (collision_type == 7) { // fallen into lava pit
         e->is_alive = 0;
         if (e->death_type != BYLAVA) {
@@ -166,6 +182,7 @@ void enemy_ai() {
         if (!e->is_visible) { continue; } // off screen = switched off
 
         if (e->is_alive) {
+            populate_dir(e);
             Boolean should_jump = FALSE;
             const Boolean moving_right = (player.x > e->x);  // always move towards the player
             const Boolean moving_left = !moving_right;
@@ -176,7 +193,7 @@ void enemy_ai() {
                 if (!e->dir[1] && !e->dir[7]) { should_jump = TRUE; } // if there's a drop (dir[1] == 0), and there's not a block blocking our jump (dir[7] == 0), try to jump it
             } else if (moving_right) { // moving right, if there's a block (dir[6]) or lava (dir[3] == 7), try to jump it
                 if (e->dir[6] || e->dir[3] == 7) { should_jump = TRUE; } // if there's a block (dir[4]) or lava (dir[1] == 7), try to jump it
-                if (!e->dir[3] && !e->dir[9]) { should_jump = TRUE; } // if there's a drop (dir[1] == 0), and there's not a block blocking our jump (dir[7] == 0), try to jump it
+                if (!e->dir[3] && !e->dir[9]) { should_jump = TRUE; } // if there's a drop (dir[1] == 0), and there's not a block blocking our jump (dir[9] == 0), try to jump it
             }
             if (should_jump && !e->is_jumping) {
                 e->gravity_compound = e->jump_strength;

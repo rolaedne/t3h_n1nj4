@@ -23,7 +23,7 @@ typedef struct {
     int h;
 } bbox;
 
-int bbox_collision(bbox box1, bbox box2);
+int bbox_collision(const bbox box1, const bbox box2);
 
 SDL_Event event;
 
