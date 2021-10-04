@@ -6,6 +6,12 @@ extern "C" {
 #endif
 
 #include <SDL2/SDL.h>
+#include "utils.h"
+
+typedef struct {
+    int state;
+    SDL_Scancode key;
+} Stateful_Key;
 
 typedef struct {
     SDL_Scancode jump;
@@ -14,15 +20,34 @@ typedef struct {
     SDL_Scancode left;
     SDL_Scancode right;
     SDL_Scancode attack;
-    SDL_Scancode special_attack;
-    SDL_Scancode debug_skip_level;
-    SDL_Scancode debug_pause_enemies;
-    SDL_Scancode debug_show_bounding_boxes;
+    Stateful_Key special_attack;
+    Stateful_Key debug_skip_level;
+    Stateful_Key debug_pause_enemies;
+    Stateful_Key debug_show_bounding_boxes;
 } Controls;
 
 Controls controls;
 
+typedef struct {
+    Boolean attack;
+    Boolean special_attack;
+    Boolean jump;
+    Boolean left;
+    Boolean right;
+    Boolean up;
+    Boolean down;
+    Boolean mouse_attack;
+    Boolean mouse_special_attack;
+    int mouse_x;
+    int mouse_y;
+    int mouse_button;
+    Boolean debug_skip_level;
+    Boolean debug_pause_enemies;
+} Inputs;
+
 void init_controls();
+Inputs check_inputs();
+int check_stateful_key_down(const Uint8* keys, Stateful_Key *stateful_key);
 
 #ifdef __cplusplus
 }

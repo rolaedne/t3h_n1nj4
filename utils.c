@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "utils.h"
 
+#include <SDL2/SDL.h>
+
 // Bounded random
 int bounded_rand(const int min, const int max) {
     const int random = rand() % max;
@@ -28,6 +30,7 @@ int delay_ms_unskippable(const unsigned int ms_to_delay) {
 
 int delay_ms_skippable(const unsigned int ms_to_delay) {
     unsigned int msecs_waited = 0;
+    SDL_Event event;
     while(msecs_waited < ms_to_delay) {
         msecs_waited += 10;
         SDL_Delay(10);

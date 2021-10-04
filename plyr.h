@@ -14,9 +14,9 @@ typedef struct {
     int score;
     int gravity_compound;
     int attack;
-    int sattack;
-    int sattack_length;
     int is_facing_right;
+    int is_looking_up;
+    int is_looking_down;
     int is_jumping;
     int is_attacking;
     int is_running;
@@ -25,15 +25,12 @@ typedef struct {
     int y;
     int w;
     int h;
-    SDL_Rect spdest;
     SDL_Surface *ninja;
-    SDL_Surface *sweapon1_1, *sweapon1_2;
 } Player;
 
 Player player;
 
 void player_physics();
-void special();
 void draw_player();
 
 #ifdef __cplusplus

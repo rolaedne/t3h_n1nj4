@@ -16,6 +16,7 @@
 #include "image.h"
 #include "utils.h"
 #include "screens.h"
+#include "special.h"
 
 #define BRICKS_WORLD 5
 #define BRICKS_DAMAGE 5
@@ -44,8 +45,6 @@ void graphics_load() {
     number = load_image_as_rgba("lvl/number.png");
     blood1 = load_image_as_rgba("bloods/blood4.png");
     snow = load_image_as_rgba("bloods/snow.png");
-    player.sweapon1_1 = load_image_as_rgba("weapons/star1.png");
-    player.sweapon1_2 = load_image_as_rgba("weapons/star2.png");
 
     /*inits some world images*/
     player.ninja = load_image_as_rgba("chars/ninja.new2.png");
@@ -71,8 +70,6 @@ void graphics_free() {
     free_surface(&number);
     free_surface(&blood1);
     free_surface(&snow);
-    free_surface(&player.sweapon1_1);
-    free_surface(&player.sweapon1_2);
     free_surface(&player.ninja);
     free_surface(&worldfloor);
 
@@ -104,6 +101,7 @@ void load_current_world_from_file() {
         for(int x = 0; x < NMY_DEATHS; ++x) { free_surface(&e->death_frames[x]); free_surface(&e->death_frames_flipped[x]); }
     }
     clear_particles();
+    clear_special_attack();
 
     /********************************************
      *world stuff needed to make world

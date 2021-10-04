@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-#include <SDL2/SDL.h>
-
 typedef enum {
     FALSE = 0, TRUE = 1
 } Boolean;
@@ -24,8 +22,6 @@ typedef struct {
 } bbox;
 
 int bbox_collision(const bbox box1, const bbox box2);
-
-SDL_Event event;
 
 #ifdef __cplusplus
 }

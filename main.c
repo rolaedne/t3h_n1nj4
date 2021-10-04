@@ -10,6 +10,7 @@
 #include "utils.h"
 #include "screens.h"
 #include "controls.h"
+#include "special.h"
 
 #define DTIME 5
 #define MSECS_PER_FRAME 1000/30
@@ -41,7 +42,7 @@ int main() {
         fprintf(stderr, "Error creating game window: %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
     }
-    SDL_ShowCursor(0);
+    //SDL_ShowCursor(0);
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
     if (renderer == NULL) {
@@ -61,63 +62,79 @@ int main() {
     /*init variables*/
     player.score = 100; /*start w/ 100 points since stars take poaints*/
     player.deaths = 0;
-    player.sattack_length = 0;
     player.is_jumping = FALSE;
     player.is_running = FALSE;
+    player.is_looking_up = FALSE;
+    player.is_looking_down = FALSE;
     player.gravity_compound = 0;
     worldnum = 0; /*set world number initially*/
     graphics_load();
+    init_special_attack();
     load_current_world_from_file(); /*builds the world*/
 
-    int skipLevel = 0;
     Uint32 ticks, delay, tmp_ps = 0;
+    Boolean pause_enemies = FALSE;
 
-    // TODO: SDL_PollEvent just takes one event off the queue, but queue should generally be emptied each frame (see: SDL_PollEvent docs)
-    while (SDL_PollEvent(&event) != -1) {//main even loop
-        if (event.type == SDL_QUIT) {
-            exit(0);
-        }
+    printf("DEBUG: entering main loop\n");
+    while (TRUE) {
+        Inputs inputs = check_inputs();
+        // if (inputs.mouse_attack || inputs.mouse_special_attack) {
+        //     printf("DEBUG: mouse down at position: %d, %d\n", inputs.mouse_x, inputs.mouse_y);
+        // }
 
-        const Uint8* keys = SDL_GetKeyboardState(NULL);
-
-        if (keys[controls.left] ^ keys[controls.right]) { // XOR, don't move left and right at the same time
-            player.is_facing_right = keys[controls.right];
+        if (inputs.left ^ inputs.right) { // XOR, don't move left and right at the same time
+            player.is_facing_right = inputs.right;
             player.is_running = TRUE;
             player.x += player.is_facing_right ? MOVERL : -MOVERL; // TODO: Actual player movement should be in player_physics?
         }
-        if (keys[controls.special_attack]) {
-            special();
+        if (inputs.up ^ inputs.down) { // XOR, don't look up and down at the same time
+            player.is_looking_up = inputs.up;
+            player.is_looking_down = inputs.down;
+        } else {
+            player.is_looking_up = FALSE;
+            player.is_looking_down = FALSE;
         }
-        if (keys[controls.jump]) {
+
+        if (inputs.mouse_special_attack || inputs.special_attack) {
+            const int source_x = player.x + player.w / 2;
+            const int source_y = player.y;
+            special_attack(inputs.mouse_button, source_x, source_y, inputs.mouse_x, inputs.mouse_y);
+        }
+
+        if (inputs.jump) {
             if (!player.is_jumping) {
                 player.is_jumping = TRUE;
                 player.gravity_compound = JUMPMAX;
             }
         }
-        if (keys[controls.attack]) {
+        if (inputs.mouse_attack || inputs.attack) {
             if (player.attack == 0) {
                 player.attack = ATTLEN;
             }
         }
         // TODO: Move debug input logic and debug flags/functionality into a debug.c/.h
-        // check_debug_keys(keys);
-        if (keys[controls.debug_skip_level] && skipLevel == 0) {
-            skipLevel = 1;
-        } else if (!keys[controls.debug_skip_level] && skipLevel == 1) {
+        if (inputs.debug_skip_level) {
             printf("DEBUG: Cheater, skipping level %d\n", worldnum);
             worldnum++;
             load_current_world_from_file();
-            skipLevel = 0;
+        }
+
+        if (inputs.debug_pause_enemies) {
+            pause_enemies = !pause_enemies;
         }
 
         ticks = SDL_GetTicks();
 
         SDL_BlitSurface(background, &wrldps, screen, NULL); // draw_background || draw_world
         player_physics();
-        enemy_ai(); // enemies_tick
+        special_attack_tick();
+        if (!pause_enemies) {
+            enemy_ai(); // enemies_tick
+        }
         spawn_snow_particles(); // precipitation_tick
         draw_player();
         draw_enemies();
+        draw_special_attack(screen);
         draw_particles(screen);
         SDL_BlitSurface(foreground, &wrldps, screen, NULL); // draw_shadows || draw_overlays
         draw_score_ui();
@@ -387,7 +404,6 @@ void dead() {
     update_screen();
     free_surface(&death_screen);
 
-    player.sattack = 0;
     player.is_dead = FALSE;
     while (!delay_ms_skippable(100));
     load_current_world_from_file();
