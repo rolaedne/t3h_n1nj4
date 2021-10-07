@@ -1,0 +1,38 @@
+* juicier animations avalable for everything
+* vertical scrolling
+* scroll-back (left/right scrolling, up/down scrolling)
+* auto-scroll levels? (tower climb, etc)
+* intentional wall climb
+* enemy wall climb support?
+* gibs
+* destructable environmental objects
+* directional attacks (4 way? 8 way?)
+* different main weapon support (spears? dual wield katanas?)
+* better physics/graphics integration (don't leave parts hanging over edges because a small piece has a collision)
+* boss fights?
+* world objects
+* multi-layer graphics: background, background objects, world objects, foreground, foreground objects (animations available to all objects)
+* parallax scrolling?
+* non-uniform player/enemy sizes (don't be tied to the current tile size)
+* more granular tiles (collision)
+* support for non-uniform collidable blocks
+* decouple animations/physics/etc from frame rate
+* object to object collisions/physics (e.g., stars can hit boxes of different types with different effects)
+* generalize damage/etc from object collisions/physics instead of explicitly checking specific types of collisions for "killing"
+* SDL2 support (DONE)
+* gamepad support
+* web port?
+* android/ios port?
+* multiplayer (split screen, multi-window?)
+* text support
+* generalized "movie" support (e.g., don't hardcode things like the intro movie, let them be driven by data)
+* load enemies from data files
+* load tiles from data files (tile types, dimensions, properties (danger edges, etc))
+* move world data into data files
+* allow lava/fire to spawn fire/ash particles
+* add support for basic scale-up/down for images
+* add support for auto-90 degree rotations for images
+* add support for auto-45 degree rotations for images
+* allow enemies/objects to be built out of composite collision targets and animated parts
+* allow player to be built out of composite collision targets and animated parts
+* 
