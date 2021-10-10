@@ -119,8 +119,8 @@ void load_current_world_from_file() {
     /*inits wolrd image*/
     wrldps.x = 0;
     wrldps.y = 0;
-    wrldps.w = 640;
-    wrldps.h = 480;
+    wrldps.w = SCREENWIDTH;
+    wrldps.h = WORLD_ROWS * BRICK_HEIGHT;
 
     /*inits ninja state*/
     player.is_facing_right = TRUE;
@@ -218,7 +218,7 @@ void load_current_world_from_file() {
     // START: Generate background image
     //sprintf(lvlname, "lvl/background%d.png", worldnum);
     //background = load_image_as_rgba(lvlname);
-    background = create_rgba_surface(world_length * BRICK_WIDTH, SCREENHEIGHT);
+    background = create_rgba_surface(world_length * BRICK_WIDTH, WORLD_ROWS * BRICK_HEIGHT);
     SDL_Rect dst; dst.x = 0; dst.y = 0; dst.w = background->w; dst.h = background->h;
 
     SDL_FillRect(background, &dst, SDL_MapRGB(background->format, 0, 0, 0)); // black
@@ -248,12 +248,13 @@ void load_current_world_from_file() {
     //foreground = NULL; //load_image_as_rgba(lvlname);
 
 
+    // TODO: This should be based on world height and such
     int i = 0;
-    int t = 5;
+    int t = WORLD_ROWS - 1;
     while (!feof(world_file)) {/*creates game world from frile*/
         fscanf(world_file, "%d", &temp_int);
         if (t == -1) {
-            t = 5;
+            t = WORLD_ROWS - 1;
             i++;
         }
         world[t][i] = temp_int;
@@ -265,7 +266,7 @@ void load_current_world_from_file() {
 
 void blit_tiles_to_background() {
     printf("DEBUG: blit_tiles_to_background()\n");
-    const int world_height = 6;
+    const int world_height = WORLD_ROWS;
 
     SDL_BlitSurface(background, &wrldps, screen, NULL);
 
@@ -291,28 +292,35 @@ void blit_tiles_to_background() {
             } else if (world[t][i] == 8) {
                 SDL_BlitSurface(dmgbrick[2], NULL, background, &worlddest);
             }
-
         }
     }
 }
 
 
 void world_mover() {
+    /*
+    const int target_x = player.x;
+    const int target_y = player.y;
+    const int max_x = (world_length * BRICK_WIDTH) - wrldps.w;
+    const int max_y = (WORLD_ROWS * BRICK_HEIGHT) - wrldps.h;
+    wrldps.x = target_x - (wrldps.w / 2);
+    wrldps.h = target_x - (wrldps.h / 2);
+    if (wrldps.x < 0) { wrldps.x = 0; }
+    if (wrldps.x > max_x) { wrldps.x = max_x; }
+    if (wrldps.y < 0) { wrldps.y = 0; }
+    if (wrldps.y > max_y) { wrldps.y = max_y; }
+    */
     int i;
-    /************************************************
-     *  This function scrolls world if person is far
-     *enought along
-     *************************************************/
-    if ((player.x + wrldps.x + (SCREENWIDTH / 2))>(BRICK_WIDTH * world_length)) {/*can't scroll anymore to the right*/
-        if ((player.x + wrldps.x + 25)>(BRICK_WIDTH * world_length)) {/*reached the end of the screen*/
+    if ((player.x + wrldps.x + (SCREENWIDTH / 2)) > (BRICK_WIDTH * world_length)) { //can't scroll anymore to the right
+        if ((player.x + wrldps.x + 25)>(BRICK_WIDTH * world_length)) { //reached the end of the screen
             worldnum++;
             load_current_world_from_file(); // Doesn't take worldnum as a parameter
         }
-    } else if (player.x > SCREENWIDTH / 2) {/*moves screen if past half screen lenght*/
+    } else if (player.x > SCREENWIDTH / 2) { // moves screen if past half screen lenght
         player.x = SCREENWIDTH / 2;
         wrldps.x += MOVERL;
         for (i = 0; i < enemymax; i++) { enemies[i].x -= MOVERL; }
-    } else if (player.x < 0) {/*can't run off the left side*/
+    } else if (player.x < 0) { // can't run off the left side
         player.x = 0;
     }
 }

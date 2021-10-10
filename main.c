@@ -50,10 +50,10 @@ int main() {
         exit(EXIT_FAILURE);
     }
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
-    SDL_RenderSetLogicalSize(renderer, 640, 480);
+    SDL_RenderSetLogicalSize(renderer, SCREENWIDTH, SCREENHEIGHT);
 
-    screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, 640, 480);
-    screen = create_rgba_surface(640, 480);
+    screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, SCREENWIDTH, SCREENHEIGHT);
+    screen = create_rgba_surface(SCREENWIDTH, SCREENHEIGHT);
 
     init_controls();
 
@@ -229,11 +229,11 @@ void play_intro_movie() {
     if (delay_ms_skippable(60 * 5)) return;
 
     ndest.y = 200;
-    ndest.x = 480;
+    ndest.x = SCREENHEIGHT;
     bardest.x = 0;
     bardest.y = 0;
-    bardest.h = 240;
-    bardest.w = 640;
+    bardest.h = SCREENHEIGHT / 2;
+    bardest.w = SCREENWIDTH;
 
     rl = load_image_as_rgba("intro_mov/redleg.png");
     for (i = 0; i < 50; i++) {
