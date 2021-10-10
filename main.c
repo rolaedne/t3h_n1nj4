@@ -71,6 +71,8 @@ int main() {
     graphics_load();
     init_special_attack();
     load_current_world_from_file(); /*builds the world*/
+    center_viewport_on_target(player.x, player.y);
+    //printf("Viewport: x: %d, y: %d, w: %d, h: %d\n", vp.x, vp.y, vp.w, vp.h);
 
     Uint32 ticks, delay, tmp_ps = 0;
     Boolean pause_enemies = FALSE;
@@ -78,9 +80,6 @@ int main() {
     printf("DEBUG: entering main loop\n");
     while (TRUE) {
         Inputs inputs = check_inputs();
-        // if (inputs.mouse_attack || inputs.mouse_special_attack) {
-        //     printf("DEBUG: mouse down at position: %d, %d\n", inputs.mouse_x, inputs.mouse_y);
-        // }
 
         if (inputs.left ^ inputs.right) { // XOR, don't move left and right at the same time
             player.is_facing_right = inputs.right;
@@ -98,7 +97,7 @@ int main() {
         if (inputs.mouse_special_attack || inputs.special_attack) {
             const int source_x = player.x + player.w / 2;
             const int source_y = player.y;
-            special_attack(inputs.mouse_button, source_x, source_y, inputs.mouse_x, inputs.mouse_y);
+            special_attack(inputs.mouse_button, source_x - vp.x, source_y - vp.y, inputs.mouse_x, inputs.mouse_y); // TODO: use world x,y for special attacks, not screen x,y
         }
 
         if (inputs.jump) {
@@ -124,20 +123,30 @@ int main() {
         }
 
         ticks = SDL_GetTicks();
-
-        SDL_BlitSurface(background, &wrldps, screen, NULL); // draw_background || draw_world
         player_physics();
         special_attack_tick();
         if (!pause_enemies) {
             enemy_ai(); // enemies_tick
         }
         spawn_snow_particles(); // precipitation_tick
+
+        // Check if the player has reach the right edge of the world (aka, did they beat the current level)
+        if (player.x > vp.max_x + vp.w - (player.h / 2)) {
+            worldnum++;
+            load_current_world_from_file();
+        }
+
+        center_viewport_on_target(player.x, player.y); // move viewport to track player x,y
+
+        // Draw everything in the right order
+        draw_world_background();
         draw_player();
         draw_enemies();
         draw_special_attack(screen);
         draw_particles(screen);
-        SDL_BlitSurface(foreground, &wrldps, screen, NULL); // draw_shadows || draw_overlays
         draw_score_ui();
+
+        // Update the actual display now that we've finished drawing
         update_screen();
 
         delay = SDL_GetTicks() - ticks;
@@ -147,7 +156,6 @@ int main() {
             delay = MSECS_PER_FRAME - delay;
         }
         SDL_Delay(delay);
-        world_mover();
         player.is_running = FALSE;
     }
 
@@ -365,7 +373,7 @@ void dead() {
     player.is_dead = TRUE;
     player.score -= 10; if (player.score < 0) player.score = 0;
 
-    SDL_Rect bloodSpawn = { player.x, player.y, player.w, player.h };
+    bbox bloodSpawn = { player.x, player.y, player.w, player.h };
     spawn_blood_particles(bloodSpawn);
 
     int vertical_accumulator = 0;
@@ -375,8 +383,6 @@ void dead() {
         player_physics();
         enemy_ai();
         spawn_snow_particles();
-        SDL_BlitSurface(background, &wrldps, screen, NULL);
-        draw_player();
         bloodSpawn.x = player.x;
         bloodSpawn.y = player.y;
         const int old_x = bloodSpawn.x;
@@ -387,9 +393,15 @@ void dead() {
         bloodSpawn.x = old_x + bounded_rand(10, 25);
         spawn_blood_particles(bloodSpawn);
         bloodSpawn.x = old_x;
+
+        center_viewport_on_target(player.x, player.y); // move viewport to track player x,y
+
+        draw_world_background();
+        draw_player();
         draw_enemies();
         draw_particles(screen);
         draw_score_ui();
+
         update_screen();
 
         delayWait -= MSECS_PER_FRAME;

@@ -25,7 +25,7 @@ void player_physics() {
      *will not allow the ninja to go into boxes
      *will cause the ninja to fall if in the air
      *************************************************/
-    if (player.y > SCREENHEIGHT) {  dead(); return; } // Death by falling off the bottom of the screen
+    if (player.y > WORLD_ROWS * BRICK_HEIGHT) {  dead(); return; } // Death by falling off the bottom of the world
 
     /*checks in air collision left && right */
     // apply gravity
@@ -34,8 +34,8 @@ void player_physics() {
     if (player.gravity_compound < JUMPMAX) { player.gravity_compound = JUMPMAX; }
     player.y += player.gravity_compound;
 
-    // convert ninja position from screen position to world position
-    const int ninja_world_x = player.x + wrldps.x;
+    // TODO: player.x is now the same as ninja_world_x, so we can get rid of this.
+    const int ninja_world_x = player.x;
 
     int test_y = player.y + BRICK_HEIGHT - GRAVITY;
     int test_x = ninja_world_x + BRICK_WIDTH - 10;
@@ -126,6 +126,6 @@ int get_player_frame_x() {
 void draw_player() {
     player.is_attacking = player.attack > 0;
     SDL_Rect src = { get_player_frame_x(), get_player_frame_y(), player.w, player.h };
-    SDL_Rect dest = { player.x, player.y, player.w, player.h };
+    SDL_Rect dest = { player.x - vp.x, player.y - vp.y, player.w, player.h };
     SDL_BlitSurface(player.ninja, &src, screen, &dest);
 }

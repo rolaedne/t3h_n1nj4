@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "image.h"
 #include "nmy.h"
+#include "world.h"
 
 #define SPECIAL_ATTACK_FRAMES 2
 #define SPECIAL_ATTACK_TYPES 2
@@ -30,7 +31,7 @@ const int special_attack_speeds[SPECIAL_ATTACK_TYPES] = { 25, 15 };
 
 void special_attack_check_for_kills(Special *s) {
     if (!s->is_active) { return; }
-    const bbox sattackBox = { s->x, s->y, s->w, s->h };
+    const bbox sattackBox = { s->x + vp.x, s->y + vp.y, s->w, s->h }; // TODO: fix the special x,y to be world coordinates instead of screen coordinates
     for (int i = 0; i < NMY; i++) {/*checks for each enemy*/
         enemy *e = &enemies[i];
         if (s->type == STAR && !e->is_alive) { continue; } // don't recheck the dead for stars

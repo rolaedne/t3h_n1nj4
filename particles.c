@@ -11,14 +11,15 @@ const int gravity_accumulator = 3;
 const int max_y_vel = 25;
 
 void draw_particle(SDL_Surface *screen, Particle *p) {
-    SDL_Rect src; src.x = p->size; src.y = p->size; src.w = p->size; src.h = p->size;
-    SDL_Rect dest; dest.x = p->x - wrldps.x; dest.y = p->y;
+    SDL_Rect src = { .x = p->size, .y = p->size, .w = p->size, .h = p->size };
+    SDL_Rect dest = { .x = p->x - vp.x, .y = p->y - vp.y };
     SDL_BlitSurface(p->image, &src, screen, &dest);
 }
 
 void persist_to_background(Particle *p) {
-    p->x += wrldps.x;
-    draw_particle(background, p);
+    SDL_Rect src = { .x = p->size, .y = p->size, .w = p->size, .h = p->size };
+    SDL_Rect dest = { .x = p->x, .y = p->y };
+    SDL_BlitSurface(p->image, &src, background, &dest);
     p->image = NULL;
 }
 

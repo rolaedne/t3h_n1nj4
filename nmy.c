@@ -32,10 +32,10 @@ void update_animation_frame(enemy *e) {
 
 void draw_enemy(enemy *e) {
     //const int right_edge = e->x + (e->w * 2);
-    const int right_edge = e->x + (e->w * 2) - wrldps.x;
-    if ((e->x - wrldps.x) < SCREENWIDTH && right_edge > 0) { // if enemy is alive draw him on screen
+    const int right_edge = e->x + (e->w * 2);
+    if ((e->x - vp.x) < vp.w && right_edge > vp.x) { // if enemy is alive draw him on screen
         //SDL_Rect dest = { e->x, e->y, e->w, e->h };
-        SDL_Rect dest = { e->x - wrldps.x, e->y - wrldps.y, e->w, e->h };
+        SDL_Rect dest = { e->x - vp.x, e->y - vp.y, e->w, e->h };
         if (e->is_alive) {
             e->is_visible = 1;
             e->is_flipped = (e->x < player.x); // living enemies should face the player
@@ -46,7 +46,7 @@ void draw_enemy(enemy *e) {
             if (death_surface != NULL) {
                 e->is_visible = 1;
                 if (e->death_bleed_counter > 0 || rand() % 75 == 0) {
-                    spawn_blood_particles((SDL_Rect){ e->x, e->y, e->w, e->h });
+                    spawn_blood_particles((bbox){ e->x, e->y, e->w, e->h });
                     e->death_bleed_counter--;
                 }
                 SDL_BlitSurface(death_surface, NULL, screen, &dest);
@@ -94,10 +94,9 @@ void enemy_physics(enemy *e) {
     e->gravity_compound += GRAVITY;
 
     // death by falling off screen
-    if (e->y + (BRICK_HEIGHT / 2) > SCREENHEIGHT) {
+    if (e->y + (BRICK_HEIGHT / 2) > (vp.max_y + vp.h)) {
         e->is_alive = FALSE;
-        SDL_Rect dest = { e->x, e->y, e->w, e->h };
-        spawn_blood_particles(dest);
+        spawn_blood_particles((bbox){ e->x, e->y, e->w, e->h });
     }
 
     // check bottom-left (dir[1])
@@ -164,8 +163,7 @@ void enemy_physics(enemy *e) {
         if (e->death_type != BYLAVA) {
             e->death_type = BYLAVA;
             e->death_bleed_counter = 15;
-            SDL_Rect dest = { e->x, e->y, e->w, e->h };
-            spawn_blood_particles(dest);
+            spawn_blood_particles((bbox){ e->x, e->y, e->w, e->h });
             // TODO: spawn fire and/or ash particles on lava
         }
     }
@@ -215,7 +213,6 @@ void enemy_ai() {
             const int y = e->y + (e->h / 2);
             spawn_particle(blood1, x, y, 0, bounded_rand(0, 1), 1.0, bounded_rand(4, 8));
         }
-
     }
 }
 

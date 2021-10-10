@@ -117,10 +117,11 @@ void load_current_world_from_file() {
         }
     }
     /*inits wolrd image*/
-    wrldps.x = 0;
-    wrldps.y = 0;
-    wrldps.w = SCREENWIDTH;
-    wrldps.h = WORLD_ROWS * BRICK_HEIGHT;
+    vp.x = 0;
+    vp.y = 0;
+    vp.w = SCREENWIDTH;
+    vp.h = SCREENHEIGHT;
+    printf("Viewport: x: %d, y: %d, w: %d, h: %d\n", vp.x, vp.y, vp.w, vp.h);
 
     /*inits ninja state*/
     player.is_facing_right = TRUE;
@@ -132,7 +133,7 @@ void load_current_world_from_file() {
 
     /*ninja start positison*/
     player.x = 0;
-    player.y = 80 * 4;
+    player.y = BRICK_HEIGHT * 4;
 
     /*initialises alive loop for enemies*/
     for (int i = 0; i < NMY; i++) { enemies[i].is_alive = 0; }
@@ -214,6 +215,8 @@ void load_current_world_from_file() {
 
     fscanf(world_file, "%d", &temp_int);
     world_length = temp_int;
+    vp.max_x = (world_length * BRICK_WIDTH) - vp.w;
+    vp.max_y = (WORLD_ROWS * BRICK_HEIGHT) - vp.h;
 
     // START: Generate background image
     //sprintf(lvlname, "lvl/background%d.png", worldnum);
@@ -268,8 +271,6 @@ void blit_tiles_to_background() {
     printf("DEBUG: blit_tiles_to_background()\n");
     const int world_height = WORLD_ROWS;
 
-    SDL_BlitSurface(background, &wrldps, screen, NULL);
-
     /* TODO: Move tile information out of code and into data files. */
     for (int i = 0; i < world_length; i++) {
         for (int t = 0; t < world_height; t++) {
@@ -296,40 +297,35 @@ void blit_tiles_to_background() {
     }
 }
 
-
-void world_mover() {
-    /*
-    const int target_x = player.x;
-    const int target_y = player.y;
-    const int max_x = (world_length * BRICK_WIDTH) - wrldps.w;
-    const int max_y = (WORLD_ROWS * BRICK_HEIGHT) - wrldps.h;
-    wrldps.x = target_x - (wrldps.w / 2);
-    wrldps.h = target_x - (wrldps.h / 2);
-    if (wrldps.x < 0) { wrldps.x = 0; }
-    if (wrldps.x > max_x) { wrldps.x = max_x; }
-    if (wrldps.y < 0) { wrldps.y = 0; }
-    if (wrldps.y > max_y) { wrldps.y = max_y; }
-    */
-    int i;
-    if ((player.x + wrldps.x + (SCREENWIDTH / 2)) > (BRICK_WIDTH * world_length)) { //can't scroll anymore to the right
-        if ((player.x + wrldps.x + 25)>(BRICK_WIDTH * world_length)) { //reached the end of the screen
-            worldnum++;
-            load_current_world_from_file(); // Doesn't take worldnum as a parameter
-        }
-    } else if (player.x > SCREENWIDTH / 2) { // moves screen if past half screen lenght
-        player.x = SCREENWIDTH / 2;
-        wrldps.x += MOVERL;
-        //for (i = 0; i < enemymax; i++) { enemies[i].x -= MOVERL; }
-    } else if (player.x < 0) { // can't run off the left side
-        player.x = 0;
+#define MAX_X_DELTA 15
+#define MAX_Y_DELTA 15
+void center_viewport_on_target(const int target_x, const int target_y) {
+    const int old_x = vp.x;
+    const int new_x = target_x - (vp.w / 2);
+    if (abs(old_x - new_x) > MAX_X_DELTA) {
+        vp.x += (old_x < new_x) ? MAX_X_DELTA : -MAX_X_DELTA;
+    } else {
+        vp.x = new_x;
     }
+    if (vp.x < 0) { vp.x = 0; }
+    else if (vp.x > vp.max_x) { vp.x = vp.max_x; }
+
+    const int old_y = vp.y;
+    const int new_y = target_y - (vp.h / 2);
+    if (abs(old_y - new_y) > MAX_Y_DELTA) {
+        vp.y += (old_y < new_y) ? MAX_Y_DELTA : -MAX_Y_DELTA;
+    } else {
+        vp.y = new_y;
+    }
+    if (vp.y < 0) { vp.y = 0; }
+    else if (vp.y > vp.max_y) { vp.y = vp.max_y; }
 }
 
 
 void spawn_snow_particles() {
     int i = 0;
     do {
-        const int x = rand() % (SCREENWIDTH * 2) + wrldps.x;
+        const int x = rand() % (vp.max_x + vp.w);
         const int y = 0;
         const float weight = 0.2 + (rand() % 10 * 0.01);
         spawn_particle(snow, x, y, -1 * bounded_rand(1, 5), bounded_rand(1, 5), weight, bounded_rand(3, 5));
@@ -337,8 +333,8 @@ void spawn_snow_particles() {
 }
 
 
-void spawn_blood_particles(const SDL_Rect target) {
-    const int x = wrldps.x + target.x + (target.w / 2);
+void spawn_blood_particles(const bbox target) {
+    const int x = target.x + (target.w / 2);
     const int y = target.y + (target.h / 2);
 
     spawn_particle(blood1, x, y, bounded_rand(1, 5), -1 * bounded_rand(3, 10), 1.0, bounded_rand(4, 5));
@@ -346,4 +342,9 @@ void spawn_blood_particles(const SDL_Rect target) {
     spawn_particle(blood1, x, y, bounded_rand(1, 4) *-1, -1 * bounded_rand(2, 8), 1.0, bounded_rand(4, 7));
     spawn_particle(blood1, x, y, bounded_rand(1, 5), -1 * bounded_rand(3, 10), 1.0, bounded_rand(4, 8));
     spawn_particle(blood1, x, y, bounded_rand(0, 3), -1 * bounded_rand(4, 12), 1.0, bounded_rand(4, 9));
+}
+
+void draw_world_background() {
+    SDL_Rect viewport_src = { vp.x, vp.y, vp.w, vp.h };
+    SDL_BlitSurface(background, &viewport_src, screen, NULL); // draw_background || draw_world
 }
