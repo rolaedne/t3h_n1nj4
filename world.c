@@ -319,7 +319,7 @@ void world_mover() {
     } else if (player.x > SCREENWIDTH / 2) { // moves screen if past half screen lenght
         player.x = SCREENWIDTH / 2;
         wrldps.x += MOVERL;
-        for (i = 0; i < enemymax; i++) { enemies[i].x -= MOVERL; }
+        //for (i = 0; i < enemymax; i++) { enemies[i].x -= MOVERL; }
     } else if (player.x < 0) { // can't run off the left side
         player.x = 0;
     }

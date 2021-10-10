@@ -31,9 +31,11 @@ void update_animation_frame(enemy *e) {
 }
 
 void draw_enemy(enemy *e) {
-    const int right_edge = e->x + (BRICK_WIDTH * 2);
-    if ((e->x - wrldps.x) < SCREENWIDTH && right_edge > 0) {/*if enemy is alive draw him on screen*/
-        SDL_Rect dest = { e->x, e->y, e->w, e->h };
+    //const int right_edge = e->x + (e->w * 2);
+    const int right_edge = e->x + (e->w * 2) - wrldps.x;
+    if ((e->x - wrldps.x) < SCREENWIDTH && right_edge > 0) { // if enemy is alive draw him on screen
+        //SDL_Rect dest = { e->x, e->y, e->w, e->h };
+        SDL_Rect dest = { e->x - wrldps.x, e->y - wrldps.y, e->w, e->h };
         if (e->is_alive) {
             e->is_visible = 1;
             e->is_flipped = (e->x < player.x); // living enemies should face the player
@@ -44,7 +46,7 @@ void draw_enemy(enemy *e) {
             if (death_surface != NULL) {
                 e->is_visible = 1;
                 if (e->death_bleed_counter > 0 || rand() % 75 == 0) {
-                    spawn_blood_particles(dest);
+                    spawn_blood_particles((SDL_Rect){ e->x, e->y, e->w, e->h });
                     e->death_bleed_counter--;
                 }
                 SDL_BlitSurface(death_surface, NULL, screen, &dest);
@@ -59,7 +61,8 @@ int get_tile(const int row, const int col) {
 }
 
 void populate_dir(enemy *e) {
-    const int center_x = e->x + wrldps.x + (e->w / 2);
+    //const int center_x = e->x + wrldps.x + (e->w / 2);
+    const int center_x = e->x + (e->w / 2);
     const int center_y = e->y + (e->h / 2);
     const int tile_row = center_y / BRICK_HEIGHT;
     const int tile_col = center_x / BRICK_WIDTH;
@@ -98,7 +101,8 @@ void enemy_physics(enemy *e) {
     }
 
     // check bottom-left (dir[1])
-    int test_x = e->x + wrldps.x + 10;
+    //int test_x = e->x + wrldps.x + 10;
+    int test_x = e->x + 10;
     int test_y = e->y + BRICK_HEIGHT - GRAVITY;
     int collision_type = is_collision(test_x, test_y);
     if (collision_type) {
@@ -109,7 +113,8 @@ void enemy_physics(enemy *e) {
     }
 
     // check bottom-right (dir[3])
-    test_x = e->x + wrldps.x + BRICK_WIDTH - 10;
+    //test_x = e->x + wrldps.x + BRICK_WIDTH - 10;
+    test_x = e->x + BRICK_WIDTH - 10;
     collision_type = is_collision(test_x, test_y);
     if (collision_type) {
         e->gravity_compound = 0;
@@ -127,7 +132,8 @@ void enemy_physics(enemy *e) {
     }
 
     // check top/top-left (dir[8]/dir[7])
-    collision_type = is_collision(e->x + wrldps.x + 10, e->y);
+    //collision_type = is_collision(e->x + wrldps.x + 10, e->y);
+    collision_type = is_collision(e->x + 10, e->y);
     if (collision_type) {
         e->gravity_compound = 0;
         e->y = (test_y / BRICK_HEIGHT) * BRICK_HEIGHT;
@@ -135,7 +141,8 @@ void enemy_physics(enemy *e) {
     }
 
     // check right (dir[6])
-    test_x = e->x + wrldps.x + BRICK_WIDTH - 1;
+    //test_x = e->x + wrldps.x + BRICK_WIDTH - 1;
+    test_x = e->x + BRICK_WIDTH - 1;
     test_y = e->y + 70;
     collision_type = is_collision(test_x, test_y);
     if (collision_type) {
@@ -143,13 +150,15 @@ void enemy_physics(enemy *e) {
     }
 
     // check left (dir[4])
-    collision_type = is_collision(e->x + wrldps.x, test_y);
+    //collision_type = is_collision(e->x + wrldps.x, test_y);
+    collision_type = is_collision(e->x, test_y);
     if (collision_type) {
         e->x += MOVERL;
     }
 
     // check below (dir[2])
-    collision_type = is_collision(e->x + wrldps.x + (BRICK_WIDTH / 2), e->y + BRICK_HEIGHT + 10);
+    //collision_type = is_collision(e->x + wrldps.x + (BRICK_WIDTH / 2), e->y + BRICK_HEIGHT + 10);
+    collision_type = is_collision(e->x + (BRICK_WIDTH / 2), e->y + BRICK_HEIGHT + 10);
     if (collision_type == 7) { // fallen into lava pit
         e->is_alive = 0;
         if (e->death_type != BYLAVA) {
@@ -201,7 +210,8 @@ void enemy_ai() {
             }
         } else if (!e->is_alive && e->is_jumping) {
             e->x += e->is_flipped ? -5 : 5; // this gives dead enemies a knockback effect
-            const int x = wrldps.x + e->x + (e->w / 2);
+            //const int x = wrldps.x + e->x + (e->w / 2);
+            const int x = e->x + (e->w / 2);
             const int y = e->y + (e->h / 2);
             spawn_particle(blood1, x, y, 0, bounded_rand(0, 1), 1.0, bounded_rand(4, 8));
         }
