@@ -52,7 +52,7 @@ void blit_tiles_to_background();
 void load_current_world_from_file();
 void center_viewport_on_target(const int target_x, const int target_y);
 int is_collision(const int x, const int y);
-void draw_world_background();
+void draw_world_background(SDL_Surface *screen);
 
 #ifdef __cplusplus
 }

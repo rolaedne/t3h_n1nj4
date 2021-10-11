@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "utils.h"
 /*******************************************
 *Roderick Newill
 *nmy.h
@@ -53,6 +54,8 @@ enemy enemies[NMY];
 
 void enemy_ai();
 void draw_enemies();
+bbox get_enemy_box(const enemy *e);
+bbox get_enemy_attack_box(const enemy *e);
 
 #ifdef __cplusplus
 }

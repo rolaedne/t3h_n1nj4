@@ -17,9 +17,9 @@
 // Takes care of case if enemy hands touch ninja. you will make with the dead.
 void check_player_collision(enemy *e) {
     if (player.is_dead || !e->is_alive) { return; } // don't kill the player if they're already dead, and dead enemies can't hurt the player
-    bbox player_box = { player.x - 5, player.y + 5, player.w - 10, player.h - 10 };
-    bbox enemy_box = { e->x - 10, e->y, 50, 50 };
-    if (bbox_collision(player_box, enemy_box)) { dead(); }
+    const bbox player_box = get_player_hit_box(&player);
+    const bbox enemy_attack_box = get_enemy_attack_box(e);
+    if (bbox_collision(player_box, enemy_attack_box)) { dead(); }
 }
 
 void update_animation_frame(enemy *e) {
@@ -30,7 +30,7 @@ void update_animation_frame(enemy *e) {
     }
 }
 
-void draw_enemy(enemy *e) {
+void draw_enemy(SDL_Surface *screen, enemy *e) {
     //const int right_edge = e->x + (e->w * 2);
     const int right_edge = e->x + (e->w * 2);
     if ((e->x - vp.x) < vp.w && right_edge > vp.x) { // if enemy is alive draw him on screen
@@ -46,7 +46,7 @@ void draw_enemy(enemy *e) {
             if (death_surface != NULL) {
                 e->is_visible = 1;
                 if (e->death_bleed_counter > 0 || rand() % 75 == 0) {
-                    spawn_blood_particles((bbox){ e->x, e->y, e->w, e->h });
+                    spawn_blood_particles(get_enemy_box(e));
                     e->death_bleed_counter--;
                 }
                 SDL_BlitSurface(death_surface, NULL, screen, &dest);
@@ -96,7 +96,7 @@ void enemy_physics(enemy *e) {
     // death by falling off screen
     if (e->y + (BRICK_HEIGHT / 2) > (vp.max_y + vp.h)) {
         e->is_alive = FALSE;
-        spawn_blood_particles((bbox){ e->x, e->y, e->w, e->h });
+        spawn_blood_particles(get_enemy_box(e));
     }
 
     // check bottom-left (dir[1])
@@ -163,7 +163,7 @@ void enemy_physics(enemy *e) {
         if (e->death_type != BYLAVA) {
             e->death_type = BYLAVA;
             e->death_bleed_counter = 15;
-            spawn_blood_particles((bbox){ e->x, e->y, e->w, e->h });
+            spawn_blood_particles(get_enemy_box(e));
             // TODO: spawn fire and/or ash particles on lava
         }
     }
@@ -216,12 +216,29 @@ void enemy_ai() {
     }
 }
 
-void draw_enemies() {
+void draw_enemies(SDL_Surface *screen) {
     for (int i = 0; i < enemymax; ++i) {
         enemy *e = &enemies[i];
         update_animation_frame(e);
-        draw_enemy(e);
+        draw_enemy(screen, e);
     }
 }
 
+inline bbox get_enemy_box(const enemy *e) {
+    return (bbox) {
+        .x = e->x,
+        .y = e->y,
+        .w = e->w,
+        .h = e->h
+    };
+}
+
+inline bbox get_enemy_attack_box(const enemy *e) {
+    return (bbox) {
+        .x = e->x - 10,
+        .y = e->y,
+        .w = 50,
+        .h = 50
+    };
+}
 

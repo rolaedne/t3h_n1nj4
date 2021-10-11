@@ -73,18 +73,45 @@ void player_physics() {
     check_for_kills();
 }
 
+inline bbox get_player_box(const Player *p) {
+    return (bbox) {
+        .x = p->x,
+        .y = p->y,
+        .w = p->w,
+        .h = p->h
+    };
+}
+
+inline bbox get_player_hit_box(const Player *p) {
+    return (bbox) {
+        .x = p->x - 5,
+        .y = p->y + 5,
+        .w = p->w - 10,
+        .h = p->h - 10
+    };
+}
+
+inline bbox get_player_attack_box(const Player *p) {
+    return (bbox) {
+        .x = p->x + (p->is_facing_right ? 45 : 0),
+        .y = p->y + 25,
+        .w = 20,
+        .h = 30
+    };
+}
+
 // Checks for attack (sword) and special attack (star) kills
 void check_for_kills() {
     if (player.is_dead || (!player.attack)) { return; } // not attacking, so no chance to kill
 
     // adjust sword attack box based on the direction the player is facing
-    const bbox attackBox = { player.x + (player.is_facing_right ? 45 : 0), player.y + 25, 20, 30 };
+    const bbox attackBox = get_player_attack_box(&player);
 
     for (int i = 0; i < NMY; ++i) {
         enemy *e = &enemies[i];
         if (e->is_alive == 0) { continue; } // don't recheck the dead
 
-        const bbox enemyBox = { e->x, e->y, e->w, e->h };
+        const bbox enemyBox = get_enemy_box(e);
 
         if (bbox_collision(enemyBox, attackBox)) { // Sword attack
             e->is_alive = 0;
@@ -123,7 +150,7 @@ int get_player_frame_x() {
     return player.is_facing_right ? 240 + offset : 0 + offset;
 }
 
-void draw_player() {
+void draw_player(SDL_Surface *screen) {
     player.is_attacking = player.attack > 0;
     SDL_Rect src = { get_player_frame_x(), get_player_frame_y(), player.w, player.h };
     SDL_Rect dest = { player.x - vp.x, player.y - vp.y, player.w, player.h };

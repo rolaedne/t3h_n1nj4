@@ -17,12 +17,14 @@
 
 void show_start_screen();
 void play_intro_movie();
-void draw_score_ui();
+void draw_score_ui(SDL_Surface *screen);
 void update_screen();
+void draw_bounding_boxes(SDL_Surface *screen);
 
 SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Texture *screen_texture;
+
 
 int main() {
     if (SDL_Init(SDL_INIT_VIDEO) == -1) {
@@ -76,6 +78,7 @@ int main() {
 
     Uint32 ticks, delay, tmp_ps = 0;
     Boolean pause_enemies = FALSE;
+    Boolean show_bounding_boxes = FALSE;
 
     printf("DEBUG: entering main loop\n");
     while (TRUE) {
@@ -122,6 +125,10 @@ int main() {
             pause_enemies = !pause_enemies;
         }
 
+        if (inputs.debug_show_bounding_boxes) {
+            show_bounding_boxes = !show_bounding_boxes;
+        }
+
         ticks = SDL_GetTicks();
         player_physics();
         special_attack_tick();
@@ -139,12 +146,15 @@ int main() {
         center_viewport_on_target(player.x, player.y); // move viewport to track player x,y
 
         // Draw everything in the right order
-        draw_world_background();
-        draw_player();
-        draw_enemies();
+        draw_world_background(screen);
+        draw_player(screen);
+        draw_enemies(screen);
         draw_special_attack(screen);
         draw_particles(screen);
-        draw_score_ui();
+        if (show_bounding_boxes) {
+            draw_bounding_boxes(screen);
+        }
+        draw_score_ui(screen);
 
         // Update the actual display now that we've finished drawing
         update_screen();
@@ -164,13 +174,62 @@ int main() {
     return 8008135;
 }
 
+void draw_bounding_box(const bbox box, SDL_Surface *screen, const Uint32 color) {
+    SDL_Rect rects[4];
+    const int view_x = box.x - vp.x;
+    const int view_y = box.y - vp.y;
+    // TOP
+    rects[0].x = view_x;
+    rects[0].y = view_y;
+    rects[0].w = box.w;
+    rects[0].h = 1;
+    // BOTTOM
+    rects[1].x = view_x;
+    rects[1].y = view_y + box.h;
+    rects[1].w = box.w;
+    rects[1].h = 1;
+    // LEFT
+    rects[2].x = view_x;
+    rects[2].y = view_y;
+    rects[2].w = 1;
+    rects[2].h = box.h;
+    // RIGHT
+    rects[3].x = view_x + box.w;
+    rects[3].y = view_y;
+    rects[3].w = 1;
+    rects[3].h = box.h;
+
+    SDL_FillRects(screen, rects, 4, color);
+}
+
+void draw_bounding_boxes(SDL_Surface *screen) {
+    draw_bounding_box(get_player_box(&player),        screen, SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF)); // player box is white
+    draw_bounding_box(get_player_hit_box(&player),    screen, SDL_MapRGB(screen->format, 0xFF, 0xFF, 0x00)); // player hit box is yellow
+    draw_bounding_box(get_player_attack_box(&player), screen, SDL_MapRGB(screen->format, 0xFF, 0x00, 0x00)); // player attack box is red
+
+    // enemies
+    const Uint32 box_color =    SDL_MapRGB(screen->format, 0x80, 0x80, 0x80); // enemy box is grey
+    const Uint32 attack_color = SDL_MapRGB(screen->format, 0x80, 0x00, 0x00); // enemy attack box is red-ish
+    for (int i = 0; i < NMY; ++i) {
+        enemy *e = &enemies[i];
+        draw_bounding_box(get_enemy_box(e),        screen, box_color);
+        draw_bounding_box(get_enemy_attack_box(e), screen, attack_color);
+    }
+
+    // special attacks
+    const Uint32 special_color = SDL_MapRGB(screen->format, 0x80, 0x00, 0x80); // special box is magenta-ish
+    // TODO: Add this after we convert specials to world coordinates
+
+    // tiles?
+}
+
 int get_length(int val) {
     int val_length = 0;
     do { val_length++; } while ((val /= 10) > 0);
     return val_length;
 }
 
-void draw_score_ui() {
+void draw_score_ui(SDL_Surface *screen) {
     SDL_Rect score_dest = { 10, 10 };
     SDL_BlitSurface(wscore, NULL, screen, &score_dest);
 
@@ -373,7 +432,7 @@ void dead() {
     player.is_dead = TRUE;
     player.score -= 10; if (player.score < 0) player.score = 0;
 
-    bbox bloodSpawn = { player.x, player.y, player.w, player.h };
+    bbox bloodSpawn = get_player_box(&player);
     int vertical_accumulator = 0;
 
     int delayWait = 750; // Give the player a moment to see how they died
@@ -393,11 +452,11 @@ void dead() {
 
         center_viewport_on_target(player.x, player.y); // move viewport to track player x,y
 
-        draw_world_background();
-        draw_player();
-        draw_enemies();
+        draw_world_background(screen);
+        draw_player(screen);
+        draw_enemies(screen);
         draw_particles(screen);
-        draw_score_ui();
+        draw_score_ui(screen);
 
         update_screen();
 
@@ -409,7 +468,7 @@ void dead() {
     SDL_Surface *death_screen = load_image_as_rgba("lvl/dead.png");
     SDL_BlitSurface(death_screen, NULL, screen, NULL); /*print dead screen*/
     SDL_BlitSurface(player.ninja, &corpse_src, screen, &corpse_dest);
-    draw_score_ui();
+    draw_score_ui(screen);
     update_screen();
     free_surface(&death_screen);
 
@@ -423,7 +482,7 @@ void show_victory_screen() {
     printf("DEBUG: ya won, bro\n");
     SDL_Surface *winnerimg = load_image_as_rgba("lvl/winner.png");
     SDL_BlitSurface(winnerimg, NULL, screen, NULL);
-    draw_score_ui();
+    draw_score_ui(screen);
     update_screen();
     free_surface(&winnerimg);
 

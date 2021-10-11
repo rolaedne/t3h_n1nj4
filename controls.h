@@ -43,6 +43,7 @@ typedef struct {
     int mouse_button;
     Boolean debug_skip_level;
     Boolean debug_pause_enemies;
+    Boolean debug_show_bounding_boxes;
 } Inputs;
 
 void init_controls();

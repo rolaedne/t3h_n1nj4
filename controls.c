@@ -18,7 +18,7 @@ void init_controls() {
     set_stateful_key((Stateful_Key){ .key = SDL_SCANCODE_S,   .state = 0 }, &controls.special_attack);
     set_stateful_key((Stateful_Key){ .key = SDL_SCANCODE_TAB, .state = 0 }, &controls.debug_skip_level);
     set_stateful_key((Stateful_Key){ .key = SDL_SCANCODE_P,   .state = 0 }, &controls.debug_pause_enemies);
-    set_stateful_key((Stateful_Key){ .key = SDL_SCANCODE_9,   .state = 0 }, &controls.debug_show_bounding_boxes);
+    set_stateful_key((Stateful_Key){ .key = SDL_SCANCODE_B,   .state = 0 }, &controls.debug_show_bounding_boxes);
 }
 
 int check_stateful_key_down(const Uint8* keys, Stateful_Key *stateful_key) {
@@ -65,6 +65,10 @@ Inputs check_inputs() {
 
     if (check_stateful_key_down(keys, &controls.debug_pause_enemies)) {
         inputs.debug_pause_enemies = TRUE;
+    }
+
+    if (check_stateful_key_down(keys, &controls.debug_show_bounding_boxes)) {
+        inputs.debug_show_bounding_boxes = TRUE;
     }
 
     while (SDL_PollEvent(&event)) {//main even loop

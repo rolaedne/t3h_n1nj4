@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include "utils.h"
+
 // set up verlocity on jump
 #define JUMPMAX -47
 #define ATTLEN 20
@@ -31,7 +33,10 @@ typedef struct {
 Player player;
 
 void player_physics();
-void draw_player();
+void draw_player(SDL_Surface *screen);
+bbox get_player_box(const Player *p);
+bbox get_player_attack_box(const Player *p);
+bbox get_player_hit_box(const Player *p);
 
 #ifdef __cplusplus
 }

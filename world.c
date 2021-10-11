@@ -350,7 +350,7 @@ void spawn_blood_particles(const bbox target) {
     spawn_particle(blood1, x, y, bounded_rand(0, 3), -1 * bounded_rand(4, 12), 1.0, bounded_rand(4, 9));
 }
 
-void draw_world_background() {
+void draw_world_background(SDL_Surface *screen) {
     SDL_Rect viewport_src = { vp.x, vp.y, vp.w, vp.h };
     SDL_BlitSurface(background, &viewport_src, screen, NULL); // draw_background || draw_world
 }
