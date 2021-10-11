@@ -4,7 +4,7 @@
 #include <SDL2/SDL_video.h>
 
 //TODO: make this a collection
-#define MAX_PARTICLES 1024
+#define MAX_PARTICLES 2048
 Particle particles[MAX_PARTICLES];
 
 const int gravity_accumulator = 3;

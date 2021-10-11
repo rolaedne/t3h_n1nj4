@@ -374,8 +374,6 @@ void dead() {
     player.score -= 10; if (player.score < 0) player.score = 0;
 
     bbox bloodSpawn = { player.x, player.y, player.w, player.h };
-    spawn_blood_particles(bloodSpawn);
-
     int vertical_accumulator = 0;
 
     int delayWait = 750; // Give the player a moment to see how they died
@@ -383,14 +381,13 @@ void dead() {
         player_physics();
         enemy_ai();
         spawn_snow_particles();
+
         bloodSpawn.x = player.x;
         bloodSpawn.y = player.y;
-        const int old_x = bloodSpawn.x;
         bloodSpawn.y -= vertical_accumulator++;
         spawn_blood_particles(bloodSpawn);
-        bloodSpawn.x = old_x - bounded_rand(10, 25);
-        spawn_blood_particles(bloodSpawn);
-        bloodSpawn.x = old_x + bounded_rand(10, 25);
+        const int old_x = bloodSpawn.x;
+        bloodSpawn.x = old_x - 10 + bounded_rand(0, 20);
         spawn_blood_particles(bloodSpawn);
         bloodSpawn.x = old_x;
 

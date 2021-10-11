@@ -299,7 +299,11 @@ void blit_tiles_to_background() {
 
 #define MAX_X_DELTA 15
 #define MAX_Y_DELTA 15
+
 void center_viewport_on_target(const int target_x, const int target_y) {
+    // TODO: allow these to be set on a per level or via scripting points
+    const Boolean allow_scrollback = TRUE;
+    const Boolean allow_scrollup = TRUE;
     const int old_x = vp.x;
     const int new_x = target_x - (vp.w / 2);
     if (abs(old_x - new_x) > MAX_X_DELTA) {
@@ -309,6 +313,7 @@ void center_viewport_on_target(const int target_x, const int target_y) {
     }
     if (vp.x < 0) { vp.x = 0; }
     else if (vp.x > vp.max_x) { vp.x = vp.max_x; }
+    if (!allow_scrollback && vp.x < old_x) { vp.x = old_x; }
 
     const int old_y = vp.y;
     const int new_y = target_y - (vp.h / 2);
@@ -319,6 +324,7 @@ void center_viewport_on_target(const int target_x, const int target_y) {
     }
     if (vp.y < 0) { vp.y = 0; }
     else if (vp.y > vp.max_y) { vp.y = vp.max_y; }
+    if (!allow_scrollup && vp.y < old_y) { vp.y = old_y; }
 }
 
 
