@@ -30,26 +30,32 @@ void update_animation_frame(enemy *e) {
     }
 }
 
+SDL_Surface *get_animation_frame(const enemy *e) {
+    if (e->is_alive) {
+        return e->is_flipped ? e->anim_frames_flipped[e->anim_frame] : e->anim_frames[e->anim_frame];
+    } else {
+        return e->is_flipped ? e->death_frames_flipped[e->death_type] : e->death_frames[e->death_type];
+    }
+}
+
 void draw_enemy(SDL_Surface *screen, enemy *e) {
     //const int right_edge = e->x + (e->w * 2);
     const int right_edge = e->x + (e->w * 2);
     if ((e->x - vp.x) < vp.w && right_edge > vp.x) { // if enemy is alive draw him on screen
         //SDL_Rect dest = { e->x, e->y, e->w, e->h };
         SDL_Rect dest = { e->x - vp.x, e->y - vp.y, e->w, e->h };
+        SDL_Surface *surface = get_animation_frame(e);
         if (e->is_alive) {
             e->is_visible = 1;
-            e->is_flipped = (e->x < player.x); // living enemies should face the player
-            SDL_Surface *enemy_surface = e->is_flipped ? e->anim_frames_flipped[e->anim_frame] : e->anim_frames[e->anim_frame];
-            SDL_BlitSurface(enemy_surface, NULL, screen, &dest);
+            SDL_BlitSurface(surface, NULL, screen, &dest);
         } else {
-            SDL_Surface *death_surface = e->is_flipped ? e->death_frames_flipped[e->death_type] : e->death_frames[e->death_type];
-            if (death_surface != NULL) {
+            if (surface != NULL) {
                 e->is_visible = 1;
                 if (e->death_bleed_counter > 0 || rand() % 75 == 0) {
                     spawn_blood_particles(get_enemy_box(e));
                     e->death_bleed_counter--;
                 }
-                SDL_BlitSurface(death_surface, NULL, screen, &dest);
+                SDL_BlitSurface(surface, NULL, screen, &dest);
             }
         }
     }
@@ -166,6 +172,10 @@ void enemy_physics(enemy *e) {
             spawn_blood_particles(get_enemy_box(e));
             // TODO: spawn fire and/or ash particles on lava
         }
+    }
+
+    if (e->is_alive) {
+        e->is_flipped = (e->x < player.x); // living enemies should face the player
     }
 }
 

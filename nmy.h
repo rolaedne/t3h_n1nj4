@@ -56,6 +56,7 @@ void enemy_ai();
 void draw_enemies();
 bbox get_enemy_box(const enemy *e);
 bbox get_enemy_attack_box(const enemy *e);
+SDL_Surface *get_animation_frame(const enemy *e); // Not something we'd leave exposed forever
 
 #ifdef __cplusplus
 }
