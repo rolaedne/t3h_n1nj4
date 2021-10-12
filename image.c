@@ -22,11 +22,11 @@ SDL_Surface *create_rgba_surface(const unsigned int width, const unsigned int he
     return surface;
 }
 
-SDL_Surface* copy_to_rgba_surface(SDL_Surface *surface) {
-    if (surface == NULL) { return NULL; }
-    SDL_Surface *original_copy = SDL_ConvertSurface(surface, surface->format, 0); // don't pollute the original
+SDL_Surface* copy_to_rgba_surface(SDL_Surface *source) {
+    if (source == NULL) { return NULL; }
+    SDL_Surface *original_copy = SDL_ConvertSurface(source, source->format, 0); // don't pollute the original
     SDL_SetSurfaceBlendMode(original_copy, SDL_BLENDMODE_NONE);
-    SDL_Surface *rgba_copy = create_rgba_surface(surface->w, surface->h);
+    SDL_Surface *rgba_copy = create_rgba_surface(source->w, source->h);
     SDL_BlitSurface(original_copy, NULL, rgba_copy, NULL);
     SDL_FreeSurface(original_copy);
     return rgba_copy;
@@ -51,10 +51,10 @@ void free_surface(SDL_Surface **surface) {
     *(surface) = NULL;
 }
 
-SDL_Surface* mirror_surface(SDL_Surface *surface) {
-    if (surface == NULL) { return NULL; }
+SDL_Surface* mirror_surface(SDL_Surface *source) {
+    if (source == NULL) { return NULL; }
 
-    SDL_Surface* copy = copy_to_rgba_surface(surface);
+    SDL_Surface* copy = copy_to_rgba_surface(source);
 
     if (SDL_MUSTLOCK(copy)) { SDL_LockSurface(copy); }
 
@@ -72,4 +72,98 @@ SDL_Surface* mirror_surface(SDL_Surface *surface) {
     if (SDL_MUSTLOCK(copy)) { SDL_UnlockSurface(copy); }
 
     return copy;
+}
+
+SDL_Surface* rotate_90(SDL_Surface *source) {
+    if (source == NULL) { return NULL; }
+
+    SDL_Surface* original_copy = copy_to_rgba_surface(source);
+    SDL_Surface *dest = create_rgba_surface(original_copy->h, original_copy->w);
+
+    if (SDL_MUSTLOCK(original_copy)) { SDL_LockSurface(original_copy); }
+    if (SDL_MUSTLOCK(dest)) { SDL_LockSurface(dest); }
+
+    const Uint32 *src_pixels = (Uint32 *) original_copy->pixels;
+    Uint32 *dst_pixels = (Uint32 *) dest->pixels;
+    const int sw = original_copy->w;
+    const int sh = original_copy->h;
+    const int dw = dest->w;
+    const int sy_max = sh - 1;
+    for (int sy = 0; sy < sh; ++sy) {
+        const int dx = sy_max - sy;
+        for (int sx = 0; sx < sw; ++sx) {
+            const int dy = sx;
+            dst_pixels[ (dy * dw) + dx ] = src_pixels[ (sy * sw) + sx ];
+        }
+    }
+
+    if (SDL_MUSTLOCK(original_copy)) { SDL_UnlockSurface(original_copy); }
+    if (SDL_MUSTLOCK(dest)) { SDL_UnlockSurface(dest); }
+
+    SDL_FreeSurface(original_copy);
+
+    return dest;
+}
+
+SDL_Surface* rotate_180(SDL_Surface *source) {
+    if (source == NULL) { return NULL; }
+
+    SDL_Surface* original_copy = copy_to_rgba_surface(source);
+    SDL_Surface *dest = create_rgba_surface(original_copy->w, original_copy->h);
+
+    if (SDL_MUSTLOCK(original_copy)) { SDL_LockSurface(original_copy); }
+    if (SDL_MUSTLOCK(dest)) { SDL_LockSurface(dest); }
+
+    const Uint32 *src_pixels = (Uint32 *) original_copy->pixels;
+    Uint32 *dst_pixels = (Uint32 *) dest->pixels;
+    const int sw = original_copy->w;
+    const int sh = original_copy->h;
+    const int dw = dest->w;
+    const int sx_max = sw - 1;
+    const int sy_max = sh - 1;
+    for (int sy = 0; sy < sh; ++sy) {
+        const int dy = sy_max - sy;
+        for (int sx = 0; sx < sw; ++sx) {
+            const int dx = sx_max - sx;
+            dst_pixels[ (dy * dw) + dx ] = src_pixels[ (sy * sw) + sx ];
+        }
+    }
+
+    if (SDL_MUSTLOCK(original_copy)) { SDL_UnlockSurface(original_copy); }
+    if (SDL_MUSTLOCK(dest)) { SDL_UnlockSurface(dest); }
+
+    SDL_FreeSurface(original_copy);
+
+    return dest;
+}
+
+SDL_Surface* rotate_270(SDL_Surface *source) {
+    if (source == NULL) { return NULL; }
+
+    SDL_Surface* original_copy = copy_to_rgba_surface(source);
+    SDL_Surface *dest = create_rgba_surface(original_copy->h, original_copy->w);
+
+    if (SDL_MUSTLOCK(original_copy)) { SDL_LockSurface(original_copy); }
+    if (SDL_MUSTLOCK(dest)) { SDL_LockSurface(dest); }
+
+    const Uint32 *src_pixels = (Uint32 *) original_copy->pixels;
+    Uint32 *dst_pixels = (Uint32 *) dest->pixels;
+    const int sw = original_copy->w;
+    const int sh = original_copy->h;
+    const int dw = dest->w;
+    const int sx_max = sw - 1;
+    for (int sy = 0; sy < sh; ++sy) {
+        const int dx = sy;
+        for (int sx = 0; sx < sw; ++sx) {
+            const int dy = sx_max - sx;
+            dst_pixels[ (dy * dw) + dx ] = src_pixels[ (sy * sw) + sx ];
+        }
+    }
+
+    if (SDL_MUSTLOCK(original_copy)) { SDL_UnlockSurface(original_copy); }
+    if (SDL_MUSTLOCK(dest)) { SDL_UnlockSurface(dest); }
+
+    SDL_FreeSurface(original_copy);
+
+    return dest;
 }
