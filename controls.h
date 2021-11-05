@@ -23,6 +23,7 @@ typedef struct {
     Stateful_Key special_attack;
     Stateful_Key debug_skip_level;
     Stateful_Key debug_pause_enemies;
+    Stateful_Key debug_step_physics;
     Stateful_Key debug_show_bounding_boxes;
 } Controls;
 
@@ -43,6 +44,7 @@ typedef struct {
     int mouse_button;
     Boolean debug_skip_level;
     Boolean debug_pause_enemies;
+    Boolean debug_step_physics;
     Boolean debug_show_bounding_boxes;
 } Inputs;
 

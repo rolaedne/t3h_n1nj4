@@ -78,6 +78,7 @@ int main() {
 
     Uint32 ticks, delay, tmp_ps = 0;
     Boolean pause_enemies = FALSE;
+    Boolean step_physics = FALSE;
     Boolean show_bounding_boxes = FALSE;
 
     printf("DEBUG: entering main loop\n");
@@ -125,6 +126,11 @@ int main() {
             pause_enemies = !pause_enemies;
         }
 
+        step_physics = FALSE;
+        if (inputs.debug_step_physics) {
+            step_physics = TRUE;
+        }
+
         if (inputs.debug_show_bounding_boxes) {
             show_bounding_boxes = !show_bounding_boxes;
         }
@@ -132,7 +138,7 @@ int main() {
         ticks = SDL_GetTicks();
         player_physics();
         special_attack_tick();
-        if (!pause_enemies) {
+        if (!pause_enemies || step_physics) {
             enemy_ai(); // enemies_tick
         }
         spawn_snow_particles(); // precipitation_tick
