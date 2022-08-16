@@ -35,4 +35,5 @@
 * add support for auto-45 degree rotations for images
 * allow enemies/objects to be built out of composite collision targets and animated parts
 * allow player to be built out of composite collision targets and animated parts
-* 
+* BUG: star/fire attacks shouldn't shift vertically on vertical scroll (should have consistent world coordinates, not affected by screen coords)
+* FEATURE: allow multiple keys mapped to same action (e.g., WASD + arrow keys)
