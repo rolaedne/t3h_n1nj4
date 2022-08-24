@@ -11,6 +11,7 @@
 #include "screens.h"
 #include "controls.h"
 #include "special.h"
+#include "debug.h"
 
 #define DTIME 5
 #define MSECS_PER_FRAME 1000/30
@@ -27,6 +28,7 @@ SDL_Texture *screen_texture;
 
 
 int main() {
+    debug_trace();
     if (SDL_Init(SDL_INIT_VIDEO) == -1) {
         fprintf(stderr, "Error initializing SDL: %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
@@ -74,14 +76,14 @@ int main() {
     init_special_attack();
     load_current_world_from_file(); /*builds the world*/
     center_viewport_on_target(player.x, player.y);
-    //printf("Viewport: x: %d, y: %d, w: %d, h: %d\n", vp.x, vp.y, vp.w, vp.h);
+    //debug_printf("Viewport: x: %d, y: %d, w: %d, h: %d\n", vp.x, vp.y, vp.w, vp.h);
 
     Uint32 ticks, delay, tmp_ps = 0;
     Boolean pause_enemies = FALSE;
     Boolean step_physics = FALSE;
     Boolean show_bounding_boxes = FALSE;
 
-    printf("DEBUG: entering main loop\n");
+    debug_printf("entering main loop\n");
     while (TRUE) {
         Inputs inputs = check_inputs();
 
@@ -117,7 +119,7 @@ int main() {
         }
         // TODO: Move debug input logic and debug flags/functionality into a debug.c/.h
         if (inputs.debug_skip_level) {
-            printf("DEBUG: Cheater, skipping level %d\n", worldnum);
+            debug_printf("Cheater, skipping level %d\n", worldnum);
             worldnum++;
             load_current_world_from_file();
         }
@@ -253,7 +255,7 @@ void draw_score_ui(SDL_Surface *screen) {
 
 // Initial player welcome screen. If they don't press spacebar, we'll show them an intro movie too.
 void show_start_screen() {
-    printf("DEBUG: startScreen\n");
+    debug_trace();
 
     SDL_Surface *start_screen_surface = load_image_as_rgba("lvl/start_screen.png");
 
@@ -274,8 +276,7 @@ void show_start_screen() {
 
 // The best intro movie
 void play_intro_movie() {
-    printf("DEBUG: playIntroMovie()\n");
-
+    debug_trace();
     /***************************
      *the intro movei that gets
      *you into the plot
@@ -431,8 +432,9 @@ void play_intro_movie() {
 
 // Death screen
 void dead() {
+    debug_trace();
     if (player.is_dead) { return; }
-    printf("DEBUG: ya dead, boo.\n");
+    debug_printf("ya dead, boo.\n");
     player.deaths += 1;
     player.attack = 0;
     player.is_dead = TRUE;
@@ -485,7 +487,8 @@ void dead() {
 
 // Game over (as winner) screen
 void show_victory_screen() {
-    printf("DEBUG: ya won, bro\n");
+    debug_trace();
+    debug_printf("ya won, bro\n");
     SDL_Surface *winnerimg = load_image_as_rgba("lvl/winner.png");
     SDL_BlitSurface(winnerimg, NULL, screen, NULL);
     draw_score_ui(screen);
